@@ -1,0 +1,9 @@
+<library path="lib/libtaskspace_controllers">
+  <class name="taskspace_controllers/PoseController"
+         type="taskspace_controllers::PoseController"
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      Pseudoinvese Jacobian 6-DOF pose controller
+    </description>
+  </class>
+</library>

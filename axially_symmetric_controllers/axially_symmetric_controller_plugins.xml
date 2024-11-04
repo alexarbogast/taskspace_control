@@ -1,0 +1,16 @@
+<library path="lib/libaxially_symmetric_controllers">
+  <class name="axially_symmetric_controllers/NullspaceController"
+         type="axially_symmetric_controllers::NullspaceController"
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      Task-space controller that maximizes manipulability using null-space projection
+    </description>
+  </class>
+  <class name="axially_symmetric_controllers/TwistDecompositionController"
+         type="axially_symmetric_controllers::TwistDecompositionController"
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      Task-space controller that maximizes manipulability using twist decomposition
+    </description>
+  </class>
+</library>

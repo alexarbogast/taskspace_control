@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<robot name="robot6R" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name="prefix" default=""/>
+  <xacro:property name="radius" value="0.5"/>
+  <xacro:property name="spacing" value="0.52"/>
+
+  <xacro:include filename="$(find taskspace_control_examples)/urdf/robot6R_macro.xacro"/>
+  <xacro:robot6R_macro prefix="$(arg prefix)"/>
+
+  <!-- colors -->
+  <material name="grey">
+    <color rgba="0.7 0.7 0.7 1.0"/>
+  </material>
+
+  <!-- Connect to world -->
+  <link name="world"/>
+  <joint name="world_base_link" type="fixed">
+    <parent link="world"/>
+    <child link = "base_link"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+  </joint>
+
+</robot>
