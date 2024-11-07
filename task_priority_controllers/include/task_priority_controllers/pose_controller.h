@@ -27,6 +27,8 @@ public:
   virtual bool init(hardware_interface::PositionJointInterface* hw,
                     ros::NodeHandle& nh) override;
   virtual void update(const ros::Time&, const ros::Duration& period) override;
+  virtual void starting(const ros::Time&) override;
+  virtual void stopping(const ros::Time&) override;
 };
 
 }  // namespace task_priority_controllers

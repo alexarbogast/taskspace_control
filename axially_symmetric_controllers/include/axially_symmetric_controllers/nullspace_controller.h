@@ -14,19 +14,14 @@
 
 #pragma once
 
-#include <task_priority_controllers/task_priority_controller.h>
-#include <taskspace_controllers/pose_controller.h>
+#include <task_priority_controllers/pose_controller.h>
 
 namespace axially_symmetric_controllers
 {
 
-class NullspaceController
-  : public task_priority_controllers::TaskPriorityController,
-    public taskspace_controllers::PoseController
+class NullspaceController : public task_priority_controllers::PoseController
 {
 public:
-  virtual bool init(hardware_interface::PositionJointInterface* hw,
-                    ros::NodeHandle& nh) override;
   virtual void update(const ros::Time&, const ros::Duration& period) override;
 };
 

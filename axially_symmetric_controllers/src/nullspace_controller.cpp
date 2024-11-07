@@ -18,14 +18,6 @@
 namespace axially_symmetric_controllers
 {
 
-bool NullspaceController::init(hardware_interface::PositionJointInterface* hw,
-                               ros::NodeHandle& nh)
-{
-  taskspace_controllers::PoseController::init(hw, nh);
-  task_priority_controllers::TaskPriorityController::init(hw, nh);
-  return true;
-}
-
 void NullspaceController::update(const ros::Time&, const ros::Duration& period)
 {
   synchronizeJointStates();  // update state

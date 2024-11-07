@@ -65,6 +65,16 @@ void PoseController::update(const ros::Time&, const ros::Duration& period)
   writeCommand(new_position);
 }
 
+void PoseController::starting(const ros::Time& time)
+{
+  taskspace_controllers::PoseController::starting(time);
+}
+
+void PoseController::stopping(const ros::Time& time)
+{
+  taskspace_controllers::PoseController::stopping(time);
+}
+
 }  // namespace task_priority_controllers
 
 #include <pluginlib/class_list_macros.h>
