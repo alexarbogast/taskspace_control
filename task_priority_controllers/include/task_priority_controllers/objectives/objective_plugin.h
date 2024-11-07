@@ -16,7 +16,9 @@
 
 #include <ros/ros.h>
 #include <taskspace_controllers/utility.h>
+
 #include <kdl/chain.hpp>
+#include <kdl/jntarrayvel.hpp>
 
 namespace task_priority_controllers
 {
@@ -26,7 +28,8 @@ public:
   RRObjective() = default;
 
   virtual bool init(ros::NodeHandle& nh, const KDL::Chain& chain);
-  virtual ctrl::VectorND getJointControlCmd() = 0;
+  virtual ctrl::VectorND
+  getJointControlCmd(const KDL::JntArrayVel& joint_state) = 0;
 
 protected:
   unsigned int n_joints_;

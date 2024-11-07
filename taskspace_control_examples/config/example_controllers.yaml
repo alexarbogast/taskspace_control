@@ -32,6 +32,7 @@ task_priority_controller:
   k_position: 10.0
   k_orient: 10.0
 
+  objective_type: maximize_manipulability
   setpoint_topic: setpoint
 
 as_nullspace_controller:

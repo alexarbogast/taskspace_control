@@ -12,19 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/objectives/minimize_velocity.h>
+#pragma once
+
+#include <task_priority_controllers/objectives/objective_plugin.h>
+
+#include <kdl/chainjnttojacsolver.hpp>
+#include <kdl/chainjnttojacdotsolver.hpp>
 
 namespace task_priority_controllers
 {
 
-ctrl::VectorND
-MinimizeVelocity::getJointControlCmd(const KDL::JntArrayVel& joint_state)
+class MaximizeManipulability : public RRObjective
 {
-  return ctrl::VectorND::Zero(n_joints_);
-}
+public:
+  MaximizeManipulability() = default;
+
+  virtual bool init(ros::NodeHandle& nh, const KDL::Chain& chain) override;
+  virtual ctrl::VectorND
+  getJointControlCmd(const KDL::JntArrayVel& joint_state) override;
+
+protected:
+  std::unique_ptr<KDL::ChainJntToJacSolver> robot_jacobian_solver_;
+  std::unique_ptr<KDL::ChainJntToJacDotSolver> robot_jacobian_dot_solver_;
+};
 
 }  // namespace task_priority_controllers
-
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(task_priority_controllers::MinimizeVelocity,
-                       task_priority_controllers::RRObjective)

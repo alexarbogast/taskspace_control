@@ -49,6 +49,7 @@ include_directories(
 add_library(rr_objectives
   src/objectives/objective_plugin.cpp
   src/objectives/minimize_velocity.cpp
+  src/objectives/maximize_manipulability.cpp
 )
 target_link_libraries(rr_objectives ${catkin_LIBRARIES} Eigen3::Eigen)
 add_dependencies(rr_objectives

@@ -6,4 +6,11 @@
       A default zero-vector redundancy resolution objective
     </description>
   </class>
+  <class name="maximize_manipulability"
+         type="task_priority_controllers::MaximizeManipulability"
+         base_class_type="task_priority_controllers::RRObjective">
+    <description>
+      A manipulability maximizing redundancy resolution objective
+    </description>
+  </class>
 </library>

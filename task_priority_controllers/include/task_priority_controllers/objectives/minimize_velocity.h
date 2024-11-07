@@ -24,7 +24,8 @@ class MinimizeVelocity : public RRObjective
 public:
   MinimizeVelocity() = default;
 
-  virtual ctrl::VectorND getJointControlCmd() override;
+  virtual ctrl::VectorND
+  getJointControlCmd(const KDL::JntArrayVel& joint_state) override;
 };
 
 }  // namespace task_priority_controllers

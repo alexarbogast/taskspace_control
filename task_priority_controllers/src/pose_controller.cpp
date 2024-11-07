@@ -54,7 +54,7 @@ void PoseController::update(const ros::Time&, const ros::Duration& period)
   cart_cmd += setpoint->twist;
 
   /* redundancy resolution */
-  ctrl::VectorND h = rr_objective_->getJointControlCmd();
+  ctrl::VectorND h = rr_objective_->getJointControlCmd(robot_state_);
 
   /* control */
   static ctrl::MatrixND I = ctrl::MatrixND::Identity(n_joints_, n_joints_);
