@@ -58,9 +58,6 @@ void TwistDecompositionController::update(const ros::Time&,
   T.block<3, 3>(3, 3) = ctrl::Matrix3D::Identity() - eeT;
 
   ctrl::Vector3D perp_cmd = eeT * jac.data.block(3, 0, 3, n_joints_) * h;
-  std::cout << "Ahhh" << std::endl;
-  std::cout << jac.data.block(3, 0, 3, n_joints_) * h << std::endl << std::endl;
-  std::cout << perp_cmd << std::endl << std::endl;
 
   /* control */
   ctrl::MatrixND J = jac.data;

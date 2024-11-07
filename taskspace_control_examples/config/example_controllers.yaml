@@ -35,6 +35,9 @@ task_priority_controller:
   objective_type: maximize_manipulability
   setpoint_topic: setpoint
 
+  rr_objective:
+    k_manip: 10.0
+
 as_nullspace_controller:
   type: axially_symmetric_controllers/NullspaceController
   joints:
@@ -54,6 +57,9 @@ as_nullspace_controller:
   objective_type: maximize_manipulability
   setpoint_topic: setpoint
 
+  rr_objective:
+    k_manip: 10.0
+
 as_twist_decomposition_controller:
   type: axially_symmetric_controllers/TwistDecompositionController
   joints:
@@ -69,10 +75,12 @@ as_twist_decomposition_controller:
 
   k_position: 10.0
   k_orient: 10.0
-  k_manip: 5.0
-  k_aiming: 10.0
 
+  objective_type: maximize_manipulability
   setpoint_topic: setpoint
+
+  rr_objective:
+    k_manip: 10.0
 
 joint_trajectory_controller:
   type: position_controllers/JointTrajectoryController

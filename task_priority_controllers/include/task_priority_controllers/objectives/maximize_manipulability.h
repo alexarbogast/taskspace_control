@@ -19,6 +19,10 @@
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/chainjnttojacdotsolver.hpp>
 
+#include <realtime_tools/realtime_buffer.h>
+#include <dynamic_reconfigure/server.h>
+#include <task_priority_controllers/ManipulabilityObjectiveConfig.h>
+
 namespace task_priority_controllers
 {
 
@@ -32,8 +36,22 @@ public:
   getJointControlCmd(const KDL::JntArrayVel& joint_state) override;
 
 protected:
+  typedef ManipulabilityObjectiveConfig ObjectiveConfig;
+  typedef dynamic_reconfigure::Server<ObjectiveConfig> ReconfigureServer;
+
+  void reconfCallback(ObjectiveConfig& config, uint16_t /*level*/);
+
   std::unique_ptr<KDL::ChainJntToJacSolver> robot_jacobian_solver_;
   std::unique_ptr<KDL::ChainJntToJacDotSolver> robot_jacobian_dot_solver_;
+
+  // dynamic reconfigure
+  struct DynamicParams
+  {
+    DynamicParams() = default;
+    double k_manip = 1.0;
+  };
+  realtime_tools::RealtimeBuffer<DynamicParams> dynamic_params_;
+  std::shared_ptr<ReconfigureServer> dyn_reconf_server_;
 };
 
 }  // namespace task_priority_controllers

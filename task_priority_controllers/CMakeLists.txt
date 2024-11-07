@@ -23,6 +23,10 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 
+generate_dynamic_reconfigure_options(
+  cfg/ManipulabilityObjective.cfg
+)
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} rr_objectives

@@ -29,12 +29,21 @@ bool MaximizeManipulability::init(ros::NodeHandle& nh, const KDL::Chain& chain)
   robot_jacobian_dot_solver_ =
       std::make_unique<KDL::ChainJntToJacDotSolver>(robot_chain_);
 
+  // Dynamic reconfigure
+  dyn_reconf_server_ =
+      std::make_shared<ReconfigureServer>(ros::NodeHandle(nh, "rr_objective"));
+  dyn_reconf_server_->setCallback(
+      std::bind(&MaximizeManipulability::reconfCallback, this,
+                std::placeholders::_1, std::placeholders::_2));
+
   return true;
 }
 
 ctrl::VectorND
 MaximizeManipulability::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 {
+  const DynamicParams* params = dynamic_params_.readFromRT();
+
   KDL::Jacobian jac(n_joints_);
   robot_jacobian_solver_->JntToJac(joint_state.q, jac);
 
@@ -58,7 +67,7 @@ MaximizeManipulability::getJointControlCmd(const KDL::JntArrayVel& joint_state)
                           .cwiseProduct(J_JT_inv)
                           .sum();
     }
-    manip_grad *= manip;  // * params->k_manip;
+    manip_grad *= manip * params->k_manip;
   }
   else
   {
@@ -66,6 +75,14 @@ MaximizeManipulability::getJointControlCmd(const KDL::JntArrayVel& joint_state)
   }
 
   return manip_grad;
+}
+
+void MaximizeManipulability::reconfCallback(ObjectiveConfig& config,
+                                            uint16_t /*level*/)
+{
+  DynamicParams dynamic_params;
+  dynamic_params.k_manip = config.k_manip;
+  dynamic_params_.writeFromNonRT(dynamic_params);
 }
 
 }  // namespace task_priority_controllers
