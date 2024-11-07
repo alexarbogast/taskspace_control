@@ -27,7 +27,7 @@
 namespace taskspace_controllers
 {
 
-class PoseController : public TaskspaceControllerBase
+class PoseController : public virtual TaskspaceControllerBase
 {
 public:
   virtual bool init(hardware_interface::PositionJointInterface* hw,

@@ -24,6 +24,9 @@ namespace taskspace_controllers
 bool TaskspaceControllerBase::init(
     hardware_interface::PositionJointInterface* hw, ros::NodeHandle& nh)
 {
+  if (initialized_)
+    return true;
+
   const std::string ns = nh.getNamespace();
 
   // Load robot description and link names
@@ -137,6 +140,7 @@ bool TaskspaceControllerBase::init(
   query_pose_service_ = nh.advertiseService(
       "query_pose", &TaskspaceControllerBase::queryPoseService, this);
 
+  initialized_ = true;
   return true;
 }
 

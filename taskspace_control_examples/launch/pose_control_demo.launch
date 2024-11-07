@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="controller" default="pose_controller"
-       doc="One of 'pose_controller, as_nullspace_controller'"/>
+    doc="One of 'pose_controller,
+                 task_priority_controller,
+                 as_nullspace_controller,
+                 as_twist_decomposition_controller'"/>
 
   <node pkg="taskspace_control_examples" type="pose_control_demo.py" name="pose_control_demo" output="screen">
     <param name="controller" value="$(arg controller)"/>

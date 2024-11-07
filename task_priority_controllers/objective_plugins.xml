@@ -1,0 +1,9 @@
+<library path="lib/librr_objectives">
+  <class name="minimize_velocity"
+         type="task_priority_controllers::MinimizeVelocity"
+         base_class_type="task_priority_controllers::RRObjective">
+    <description>
+      A default zero-vector redundancy resolution objective
+    </description>
+  </class>
+</library>

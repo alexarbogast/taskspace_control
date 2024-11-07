@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>axially_symmetric_controllers</name>
+  <name>task_priority_controllers</name>
   <version>0.0.1</version>
-  <description>The axially_symmetric_controllers package</description>
+  <description>The task_priority_controllers package</description>
   <author email="arbogastaw@gmail.com">Alex Arbogast</author>
   <maintainer email="arbogastaw@gmail.com">Alex Arbogast</maintainer>
   <license>Apache2</license>
@@ -20,6 +20,7 @@
   <depend>pluginlib</depend>
 
   <export>
-    <controller_interface plugin="${prefix}/axially_symmetric_controller_plugins.xml"/>
+    <controller_interface plugin="${prefix}/task_priority_controller_plugins.xml"/>
+    <task_priority_controllers plugin="${prefix}/objective_plugins.xml"/>
   </export>
 </package>

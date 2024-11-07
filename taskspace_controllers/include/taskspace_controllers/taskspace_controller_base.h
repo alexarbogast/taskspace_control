@@ -60,6 +60,7 @@ private:
                         taskspace_control_msgs::QueryPose::Response& resp);
 
   ros::ServiceServer query_pose_service_;
+  bool initialized_ = false;
 };
 
 }  // namespace taskspace_controllers

@@ -1,0 +1,9 @@
+<library path="lib/libtask_priority_controllers">
+  <class name="task_priority_controllers/PoseController"
+         type="task_priority_controllers::PoseController"
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      A pose-tracking task-priority (nullspace projection) controller
+    </description>
+  </class>
+</library>

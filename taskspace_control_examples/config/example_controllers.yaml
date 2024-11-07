@@ -16,6 +16,24 @@ pose_controller:
 
   setpoint_topic: setpoint
 
+task_priority_controller:
+  type: task_priority_controllers/PoseController
+  joints:
+    - joint1
+    - joint2
+    - joint3
+    - joint4
+    - joint5
+    - joint6
+
+  base_link: base_link
+  eef_link: tool0
+
+  k_position: 10.0
+  k_orient: 10.0
+
+  setpoint_topic: setpoint
+
 as_nullspace_controller:
   type: axially_symmetric_controllers/NullspaceController
   joints:
