@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include <task_priority_controllers/pose_controller.h>
-#include "taskspace_controllers/utility.h"
 
 namespace task_priority_controllers
 {
@@ -58,7 +57,7 @@ void PoseController::update(const ros::Time&, const ros::Duration& period)
 
   /* control */
   static ctrl::MatrixND I = ctrl::MatrixND::Identity(n_joints_, n_joints_);
-  ctrl::MatrixND J_pinv = ctrl::leftPinv(jac.data);
+  ctrl::MatrixND J_pinv = ctrl::rightPinv(jac.data);
   ctrl::VectorND joint_cmd = J_pinv * cart_cmd + (I - J_pinv * jac.data) * h;
 
   ctrl::VectorND new_position =

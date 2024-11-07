@@ -14,68 +14,20 @@
 
 #pragma once
 
-#include <taskspace_controllers/taskspace_controller_base.h>
-#include <axially_symmetric_controllers/setpoint.h>
-#include <axially_symmetric_controllers/AxiallySymmetricControllerConfig.h>
-
-#include <kdl/chainjnttojacsolver.hpp>
-#include <kdl/chainjnttojacdotsolver.hpp>
-
-#include <taskspace_control_msgs/PoseTwistSetpoint.h>
-#include <realtime_tools/realtime_buffer.h>
-#include <dynamic_reconfigure/server.h>
+#include <task_priority_controllers/task_priority_controller.h>
+#include <taskspace_controllers/pose_controller.h>
 
 namespace axially_symmetric_controllers
 {
 
 class NullspaceController
-  : public taskspace_controllers::TaskspaceControllerBase
+  : public task_priority_controllers::TaskPriorityController,
+    public taskspace_controllers::PoseController
 {
 public:
   virtual bool init(hardware_interface::PositionJointInterface* hw,
                     ros::NodeHandle& nh) override;
   virtual void update(const ros::Time&, const ros::Duration& period) override;
-  virtual void starting(const ros::Time&) override;
-  virtual void stopping(const ros::Time&) override;
-
-protected:
-  typedef taskspace_controllers::TaskspaceControllerBase Base;
-  typedef AxiallySymmetricSetpoint Setpoint;
-  typedef AxiallySymmetricControllerConfig ControllerConfig;
-  typedef dynamic_reconfigure::Server<AxiallySymmetricControllerConfig>
-      ReconfigureServer;
-
-  void reconfCallback(ControllerConfig& config, uint16_t /*level*/);
-  void setpointCallback(
-      const taskspace_control_msgs::PoseTwistSetpointConstPtr& msg);
-
-  // kinematics solvers
-  std::unique_ptr<KDL::ChainJntToJacSolver> robot_jacobian_solver_;
-  std::unique_ptr<KDL::ChainJntToJacDotSolver> robot_jacobian_dot_solver_;
-
-  // limits
-  KDL::JntArray limits_avg_;
-  KDL::JntArray limits_bounds_;
-
-  // setpoint
-  realtime_tools::RealtimeBuffer<Setpoint> setpoint_;
-  ros::Subscriber sub_setpoint_;
-
-  // dynamic reconfigure
-  struct DynamicParams
-  {
-    DynamicParams()
-      : k_position(1.0), k_aiming(1.0), k_manip(1.0), k_limits(1.0)
-    {
-    }
-
-    double k_position;  // gain values
-    double k_aiming;
-    double k_manip;
-    double k_limits;
-  };
-  realtime_tools::RealtimeBuffer<DynamicParams> dynamic_params_;
-  std::shared_ptr<ReconfigureServer> dyn_reconf_server_;
 };
 
 }  // namespace axially_symmetric_controllers

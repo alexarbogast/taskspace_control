@@ -70,7 +70,7 @@ void PoseController::update(const ros::Time&, const ros::Duration& period)
   cart_cmd += setpoint->twist;
 
   /* control */
-  ctrl::VectorND joint_cmd = ctrl::leftPinv(jac.data) * cart_cmd;
+  ctrl::VectorND joint_cmd = ctrl::rightPinv(jac.data) * cart_cmd;
   ctrl::VectorND new_position =
       robot_state_.q.data + (joint_cmd * period.toSec());
   writeCommand(new_position);

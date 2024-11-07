@@ -12,6 +12,7 @@
   <depend>urdf</depend>
   <depend>kdl_parser</depend>
   <depend>taskspace_controllers</depend>
+  <depend>task_priority_controllers</depend>
   <depend>taskspace_control_msgs</depend>
   <depend>hardware_interface</depend>
   <depend>controller_interface</depend>

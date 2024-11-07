@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   kdl_parser
   taskspace_controllers
+  task_priority_controllers
   taskspace_control_msgs
   hardware_interface
   controller_interface
@@ -35,6 +36,7 @@ catkin_package(
     urdf
     kdl_parser
     taskspace_controllers
+    task_priority_controllers
     taskspace_control_msgs
     hardware_interface
     controller_interface
