@@ -17,10 +17,15 @@
 namespace task_priority_controllers
 {
 
-bool RRObjective::init(ros::NodeHandle& nh, const KDL::Chain& chain)
+bool RRObjective::init(ros::NodeHandle& nh, const KDL::Chain& chain,
+                       const KDL::JntArray& upper_pos_limits,
+                       const KDL::JntArray& lower_pos_limits)
 {
   robot_chain_ = chain;
   n_joints_ = robot_chain_.getNrOfJoints();
+
+  upper_pos_limits_ = upper_pos_limits;
+  lower_pos_limits_ = lower_pos_limits;
   return true;
 }
 

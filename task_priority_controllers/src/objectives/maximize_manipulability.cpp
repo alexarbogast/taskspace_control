@@ -19,9 +19,11 @@ namespace task_priority_controllers
 
 static double MANIP_THRESHOLD = 1e-10;
 
-bool MaximizeManipulability::init(ros::NodeHandle& nh, const KDL::Chain& chain)
+bool MaximizeManipulability::init(ros::NodeHandle& nh, const KDL::Chain& chain,
+                                  const KDL::JntArray& upper_pos_limits,
+                                  const KDL::JntArray& lower_pos_limits)
 {
-  RRObjective::init(nh, chain);
+  RRObjective::init(nh, chain, upper_pos_limits, lower_pos_limits);
 
   robot_jacobian_solver_ =
       std::make_unique<KDL::ChainJntToJacSolver>(robot_chain_);

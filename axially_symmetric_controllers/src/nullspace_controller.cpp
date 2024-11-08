@@ -55,7 +55,7 @@ void NullspaceController::update(const ros::Time&, const ros::Duration& period)
   ctrl::MatrixND J_pinv = ctrl::rightPinv(J);
 
   static ctrl::MatrixND I = ctrl::MatrixND::Identity(n_joints_, n_joints_);
-  ctrl::VectorND joint_cmd = J_pinv * cart_cmd + (I - J_pinv * jac.data) * h;
+  ctrl::VectorND joint_cmd = J_pinv * cart_cmd + (I - J_pinv * J) * h;
 
   ctrl::VectorND new_position =
       robot_state_.q.data + (joint_cmd * period.toSec());

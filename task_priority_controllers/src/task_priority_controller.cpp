@@ -40,7 +40,8 @@ bool TaskPriorityController::init(
     return false;
   }
 
-  return rr_objective_->init(nh, robot_chain_);
+  return rr_objective_->init(nh, robot_chain_, upper_pos_limits_,
+                             lower_pos_limits_);
 }
 
 }  // namespace task_priority_controllers

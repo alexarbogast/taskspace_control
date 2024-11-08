@@ -16,20 +16,17 @@
 
 #include <task_priority_controllers/objectives/objective_plugin.h>
 
-#include <kdl/chainjnttojacsolver.hpp>
-#include <kdl/chainjnttojacdotsolver.hpp>
-
 #include <realtime_tools/realtime_buffer.h>
 #include <dynamic_reconfigure/server.h>
-#include <task_priority_controllers/ManipulabilityObjectiveConfig.h>
+#include <task_priority_controllers/JointLimitsObjectiveConfig.h>
 
 namespace task_priority_controllers
 {
 
-class MaximizeManipulability : public RRObjective
+class AvoidJointLimits : public RRObjective
 {
 public:
-  MaximizeManipulability() = default;
+  AvoidJointLimits() = default;
 
   virtual bool init(ros::NodeHandle& nh, const KDL::Chain& chain,
                     const KDL::JntArray& upper_pos_limits,
@@ -38,19 +35,18 @@ public:
   getJointControlCmd(const KDL::JntArrayVel& joint_state) override;
 
 protected:
-  typedef ManipulabilityObjectiveConfig ObjectiveConfig;
+  typedef JointLimitsObjectiveConfig ObjectiveConfig;
   typedef dynamic_reconfigure::Server<ObjectiveConfig> ReconfigureServer;
 
   void reconfCallback(ObjectiveConfig& config, uint16_t /*level*/);
 
-  std::unique_ptr<KDL::ChainJntToJacSolver> robot_jacobian_solver_;
-  std::unique_ptr<KDL::ChainJntToJacDotSolver> robot_jacobian_dot_solver_;
+  KDL::JntArray limits_avg;
 
   // dynamic reconfigure
   struct DynamicParams
   {
     DynamicParams() = default;
-    double k_manip = 1.0;
+    double k_limits = 1.0;
   };
   realtime_tools::RealtimeBuffer<DynamicParams> dynamic_params_;
   std::shared_ptr<ReconfigureServer> dyn_reconf_server_;

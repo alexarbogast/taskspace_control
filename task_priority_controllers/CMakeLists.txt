@@ -25,6 +25,7 @@ find_package(Eigen3 REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/ManipulabilityObjective.cfg
+  cfg/JointLimitsObjective.cfg
 )
 
 catkin_package(
@@ -54,6 +55,7 @@ add_library(rr_objectives
   src/objectives/objective_plugin.cpp
   src/objectives/minimize_velocity.cpp
   src/objectives/maximize_manipulability.cpp
+  src/objectives/avoid_joint_limits.cpp
 )
 target_link_libraries(rr_objectives ${catkin_LIBRARIES} Eigen3::Eigen)
 add_dependencies(rr_objectives

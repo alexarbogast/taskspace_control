@@ -13,4 +13,11 @@
       A manipulability maximizing redundancy resolution objective
     </description>
   </class>
+  <class name="avoid_joint_limits"
+         type="task_priority_controllers::AvoidJointLimits"
+         base_class_type="task_priority_controllers::RRObjective">
+    <description>
+      A manipulability maximizing redundancy resolution objective
+    </description>
+  </class>
 </library>

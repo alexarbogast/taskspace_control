@@ -24,10 +24,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 
-generate_dynamic_reconfigure_options(
-  cfg/AxiallySymmetricController.cfg
-)
-
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
@@ -58,7 +54,6 @@ add_library(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} Eigen3::Eigen)
 add_dependencies(${PROJECT_NAME}
-  ${PROJECT_NAME}_gencfg
   ${catkin_EXPORTED_TARGETS}
 )
 
