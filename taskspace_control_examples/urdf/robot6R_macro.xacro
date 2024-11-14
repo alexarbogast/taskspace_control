@@ -222,5 +222,11 @@
         <material name="grey"/>
       </visual>
     </link>
+    <link name="${prefix}tool"/>
+    <joint name="${prefix}tool_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="${-pi/2} ${-pi/2} 0"/>
+      <parent link="${prefix}tool0"/>
+      <child link="${prefix}tool"/>
+    </joint>
   </xacro:macro>
 </robot>

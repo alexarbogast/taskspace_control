@@ -9,7 +9,7 @@ pose_controller:
     - joint6
 
   base_link: base_link
-  eef_link: tool0
+  eef_link: tool
 
   k_position: 10.0
   k_orient: 10.0
@@ -27,14 +27,14 @@ task_priority_controller:
     - joint6
 
   base_link: base_link
-  eef_link: tool0
+  eef_link: tool
 
   k_position: 10.0
   k_orient: 10.0
 
-  objective_type: maximize_manipulability
   setpoint_topic: setpoint
 
+  objective_type: maximize_manipulability
   rr_objective:
     k_manip: 10.0
 
@@ -49,14 +49,14 @@ as_nullspace_controller:
     - joint6
 
   base_link: base_link
-  eef_link: tool0
+  eef_link: tool
 
   k_position: 10.0
   k_orient: 10.0
 
-  objective_type: maximize_manipulability
   setpoint_topic: setpoint
 
+  objective_type: maximize_manipulability
   rr_objective:
     k_manip: 10.0
 
@@ -71,14 +71,14 @@ as_twist_decomposition_controller:
     - joint6
 
   base_link: base_link
-  eef_link: tool0
+  eef_link: tool
 
   k_position: 10.0
   k_orient: 10.0
 
-  objective_type: maximize_manipulability
   setpoint_topic: setpoint
 
+  objective_type: maximize_manipulability
   rr_objective:
     k_manip: 10.0
 
