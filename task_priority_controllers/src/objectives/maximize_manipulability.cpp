@@ -52,31 +52,27 @@ MaximizeManipulability::getJointControlCmd(const KDL::JntArrayVel& joint_state)
   ctrl::MatrixND J_JT = jac.data * jac.data.transpose();
   double manip = sqrt(J_JT.determinant());
 
-  ctrl::VectorND manip_grad(n_joints_);
-  if (manip > MANIP_THRESHOLD)
+  ctrl::VectorND manip_grad = ctrl::VectorND::Zero(n_joints_);
+  if (manip < MANIP_THRESHOLD)
   {
-    ctrl::MatrixND J_JT_inv = J_JT.inverse();
-    KDL::JntArrayVel current_state(joint_state);
-    KDL::Jacobian hessian_block(n_joints_);
-
-    for (std::size_t i = 0; i < n_joints_; ++i)
-    {
-      current_state.qdot.data.setZero();
-      current_state.qdot(i) = 1.0;
-
-      robot_jacobian_dot_solver_->JntToJacDot(current_state, hessian_block);
-      manip_grad[i] = (jac.data * hessian_block.data.transpose())
-                          .cwiseProduct(J_JT_inv)
-                          .sum();
-    }
-    manip_grad *= manip * params->k_manip;
-  }
-  else
-  {
-    manip_grad.setZero();
+    return manip_grad;
   }
 
-  return manip_grad;
+  ctrl::MatrixND J_JT_inv = J_JT.inverse();
+  KDL::JntArrayVel current_state(joint_state);
+  KDL::Jacobian hessian_block(n_joints_);
+
+  for (std::size_t i = 0; i < n_joints_; ++i)
+  {
+    current_state.qdot.data.setZero();
+    current_state.qdot(i) = 1.0;
+
+    robot_jacobian_dot_solver_->JntToJacDot(current_state, hessian_block);
+    manip_grad[i] = (jac.data * hessian_block.data.transpose())
+                        .cwiseProduct(J_JT_inv)
+                        .sum();
+  }
+  return manip_grad *= manip * params->k_manip;
 }
 
 void MaximizeManipulability::reconfCallback(ObjectiveConfig& config,
