@@ -104,21 +104,21 @@
       <visual name="joint4">
         <origin xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
         <geometry>
-                <cylinder length="${joint_length}" radius="${joint_radius}"/>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
         </geometry>
         <material name="grey"/>
       </visual>
       <visual name="link">
         <origin xyz="0 ${link4_length / 2.0} 0" rpy="${pi / 2.0} 0 0" />
         <geometry>
-                <cylinder length="${link4_length}" radius="${link_radius}"/>
+          <cylinder length="${link4_length}" radius="${link_radius}"/>
         </geometry>
         <material name="grey"/>
       </visual>
       <visual name="joint5">
         <origin xyz="0 ${link4_length} 0" rpy="0 0 0" />
         <geometry>
-                <cylinder length="${joint_length}" radius="${joint_radius}"/>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
         </geometry>
         <material name="grey"/>
       </visual>

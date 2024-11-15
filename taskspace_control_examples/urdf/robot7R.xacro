@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<robot name="robot6R" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="robot7R" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:arg name="prefix" default=""/>
 
-  <xacro:include filename="$(find taskspace_control_examples)/urdf/robot6R_macro.xacro"/>
-  <xacro:robot6R_macro prefix="$(arg prefix)"/>
+  <xacro:include filename="$(find taskspace_control_examples)/urdf/robot7R_macro.xacro"/>
+  <xacro:robot7R_macro prefix="$(arg prefix)"/>
 
   <!-- colors -->
-  <material name="grey">
-    <color rgba="0.7 0.7 0.7 1.0"/>
+  <material name="cream">
+    <color rgba="1.0 0.99 0.81 1.0"/>
   </material>
 
   <!-- Connect to world -->
@@ -17,5 +17,4 @@
     <child link = "base_link"/>
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </joint>
-
 </robot>

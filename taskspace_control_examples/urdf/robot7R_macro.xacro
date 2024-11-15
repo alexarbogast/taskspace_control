@@ -1,0 +1,219 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+  A fictitious robot model for testing purposes.
+  The kinematics is roughly inspired by the FRANKA RESEARCH 3.
+  -->
+
+  <xacro:macro name="robot7R_macro" params="prefix">
+
+    <!-- joint properties -->
+    <xacro:property name="joint_radius" value="0.02" />
+    <xacro:property name="joint_length" value="0.06" />
+
+    <!-- link properties -->
+    <xacro:property name="link_radius" value="0.01" />
+    <xacro:property name="link1_length" value="0.333" />
+    <xacro:property name="link2_length" value="0.316" />
+    <xacro:property name="link3_length" value="0.0825" />
+    <xacro:property name="link4_length" value="0.384" />
+    <xacro:property name="link6_length" value="0.088" />
+    <xacro:property name="link7_length" value="0.05" />
+
+    <!-- links -->
+    <link name="${prefix}base_link"/>
+    <link name="${prefix}link1">
+      <visual name="joint1">
+        <origin xyz="0 0 ${-link1_length + joint_length / 2}" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+      <visual name="link1">
+        <origin xyz="0 0 ${-link1_length / 2}" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${link1_length}" radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+    </link>
+    <link name="${prefix}link2">
+      <visual name="joint2">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+      <visual name="link2">
+        <origin xyz="0 -${link2_length / 2.0} 0" rpy="${pi / 2} 0 0" />
+        <geometry>
+          <cylinder length="${link2_length}" radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+    </link>
+    <link name="${prefix}link3">
+      <visual name="joint3">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+      <visual name="link3">
+        <origin xyz="${link3_length / 2} 0 0" rpy="0 ${pi / 2} 0" />
+        <geometry>
+          <cylinder length="${link3_length}" radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+    </link>
+    <link name="${prefix}link4">
+      <visual name="joint4">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+      <visual name="link4_1">
+        <origin xyz="0 ${link4_length * 0.1} 0" rpy="${pi / 2.0} 0 0" />
+        <geometry>
+          <cylinder length="${link4_length * .2}" radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+      <visual name="link4_2">
+        <origin xyz="-${link3_length / 2} ${link4_length * 0.2} 0" rpy="0 ${pi / 2.0} 0" />
+        <geometry>
+          <cylinder length="${link3_length + link_radius * 2}" radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+    </link>
+    <link name="${prefix}link5">
+      <visual name="joint5">
+        <origin xyz="0 0 -${link4_length * 0.4}" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+      <visual name="link4_3">
+        <origin xyz="0 0 -${link4_length * 0.4}" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${link4_length * 0.8}" radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+      <visual name="joint6">
+        <origin xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
+        <geometry>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+    </link>
+    <link name="${prefix}link6">
+      <visual name="link6">
+        <origin xyz="${link6_length / 2.0} 0 0" rpy="0 ${pi / 2} 0" />
+        <geometry>
+          <cylinder length="${link6_length}" radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+    </link>
+    <link name="link7">
+      <visual name="joint7">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+      <visual name="link7">
+        <origin xyz="0 0 ${link7_length / 2.0}" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="${link7_length}" radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+    </link>
+
+    <!-- joints -->
+    <joint name="${prefix}joint1" type="revolute">
+      <parent link="${prefix}base_link"/>
+      <child link = "${prefix}link1"/>
+      <origin xyz="0.0 0.0 ${link1_length}" rpy="0.0 0.0 0.0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-2.7437" upper="2.7437" effort="1.0" velocity="2.62"/>
+    </joint>
+    <joint name="${prefix}joint2" type="revolute">
+      <parent link="${prefix}link1"/>
+      <child link = "${prefix}link2"/>
+      <origin xyz="0.0 0.0 0.0" rpy="-${pi / 2.0} 0.0 0.0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.7837" upper="1.7837" effort="1.0" velocity="2.62"/>
+    </joint>
+    <joint name="${prefix}joint3" type="revolute">
+      <parent link="${prefix}link2"/>
+      <child link = "${prefix}link3"/>
+      <origin xyz="0.0 -${link2_length} 0.0" rpy="${pi / 2.0} 0.0 0.0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-2.9007" upper="2.9007" effort="1.0" velocity="2.62"/>
+    </joint>
+    <joint name="${prefix}joint4" type="revolute">
+      <parent link="${prefix}link3"/>
+      <child link = "${prefix}link4"/>
+      <origin xyz="${link3_length} 0.0 0.0" rpy="${pi / 2.0} 0.0 0.0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-3.14" upper="0.0" effort="1.0" velocity="2.62"/>
+    </joint>
+    <joint name="${prefix}joint5" type="revolute">
+      <parent link="${prefix}link4"/>
+      <child link = "${prefix}link5"/>
+      <origin xyz="-${link3_length} ${link4_length} 0.0" rpy="-${pi / 2} 0.0 0.0" />
+      <axis xyz="0 0 1"/>
+      <limit lower="-2.8065" upper="2.8065" effort="1.0" velocity="5.26"/>
+    </joint>
+    <joint name="${prefix}joint6" type="revolute">
+      <parent link="${prefix}link5" />
+      <child link = "${prefix}link6"/>
+      <origin xyz="0.0 0.0 0.0" rpy="${pi / 2.0} 0.0 0.0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="0.0" upper="4.2" effort="1.0" velocity="4.18"/>
+    </joint>
+    <joint name="${prefix}joint7" type="revolute">
+      <parent link="${prefix}link6"/>
+      <child link = "${prefix}link7"/>
+      <origin xyz="${link6_length} 0.0 0.0" rpy="${pi / 2.0} 0.0 0.0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-3.0159" upper="3.0159" effort="1.0" velocity="5.26"/>
+    </joint>
+
+    <!-- The default end-effector -->
+    <joint name="${prefix}tool0_joint" type="fixed">
+      <origin xyz="0 0 ${link7_length}" rpy="0 0 0"/>
+      <parent link="${prefix}link7"/>
+      <child link="${prefix}tool0"/>
+    </joint>
+    <link name="${prefix}tool0">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <sphere radius="${link_radius}"/>
+        </geometry>
+        <material name="cream"/>
+      </visual>
+    </link>
+    <link name="${prefix}tool"/>
+    <joint name="${prefix}tool_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="${-pi/2} ${-pi/2} 0"/>
+      <parent link="${prefix}tool0"/>
+      <child link="${prefix}tool"/>
+    </joint>
+  </xacro:macro>
+</robot>

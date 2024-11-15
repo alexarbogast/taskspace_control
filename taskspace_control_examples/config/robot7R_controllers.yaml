@@ -1,3 +1,24 @@
+# 7R robot simulation hardware
+generic_hw_control_loop:
+  loop_hz: 1000
+  cycle_time_error_threshold: 0.01
+
+hardware_interface:
+  joints:
+    - joint1
+    - joint2
+    - joint3
+    - joint4
+    - joint5
+    - joint6
+    - joint7
+  sim_control_mode: 0  # 0: position, 1: velocity
+
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 100
+
+# 7R robot controllers
 pose_controller:
   type: taskspace_controllers/PoseController
   joints:
@@ -7,9 +28,10 @@ pose_controller:
     - joint4
     - joint5
     - joint6
+    - joint7
 
   base_link: base_link
-  eef_link: tool
+  eef_link: tool0
 
   k_position: 10.0
   k_orient: 10.0
@@ -25,9 +47,10 @@ task_priority_controller:
     - joint4
     - joint5
     - joint6
+    - joint7
 
   base_link: base_link
-  eef_link: tool
+  eef_link: tool0
 
   k_position: 10.0
   k_orient: 10.0
@@ -47,9 +70,10 @@ as_nullspace_controller:
     - joint4
     - joint5
     - joint6
+    - joint7
 
   base_link: base_link
-  eef_link: tool
+  eef_link: tool0
 
   k_position: 10.0
   k_orient: 10.0
@@ -69,9 +93,10 @@ as_twist_decomposition_controller:
     - joint4
     - joint5
     - joint6
+    - joint7
 
   base_link: base_link
-  eef_link: tool
+  eef_link: tool0
 
   k_position: 10.0
   k_orient: 10.0
@@ -91,3 +116,4 @@ joint_trajectory_controller:
     - joint4
     - joint5
     - joint6
+    - joint7

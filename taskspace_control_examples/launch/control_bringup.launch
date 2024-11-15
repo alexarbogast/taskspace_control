@@ -1,16 +1,18 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="robot" default="robot6R" doc="One of 'robot6R', 'robot7R"/>
+
   <!-- GDB functionality -->
   <arg name="debug" default="false" />
   <arg unless="$(arg debug)" name="launch_prefix" value=""/>
   <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args"/>
 
   <!-- Load robot_description -->
-  <param name="robot_description" command="xacro '$(find taskspace_control_examples)/urdf/robot6R.xacro'"/>
+  <param name="robot_description" command="xacro '$(find taskspace_control_examples)/urdf/$(arg robot).xacro'"/>
+  <param name="robot_type" value="$(arg robot)"/>
 
   <!-- Load hardware interface and controllers -->
-  <rosparam file="$(find taskspace_control_examples)/config/robot_hardware.yaml"/>
-  <rosparam file="$(find taskspace_control_examples)/config/example_controllers.yaml"/>
+  <rosparam file="$(find taskspace_control_examples)/config/$(arg robot)_controllers.yaml"/>
 
   <node name="sim_hw_interface" pkg="ros_control_boilerplate" type="sim_hw_main"
         output="screen" launch-prefix="$(arg launch_prefix)"/>

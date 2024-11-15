@@ -9,11 +9,25 @@ from taskspace_control_examples import ControlDemo
 from taskspace_control_examples.trajectory import *
 
 
+robot_params = {
+    "robot6R": {
+        "orient": Quaternion(0.0, 0.0, 0.0, 1.0),
+        "home": [0.0, -1.125, 2.275, -1.15, 1.571, 0.0],
+    },
+    "robot7R": {
+        "orient": Quaternion(1.0, 0.0, 0.0, 0.0),
+        "home": [0.0, 0.0, 0.0, -np.pi / 2, 0.0, np.pi / 2, 0.0],
+    },
+}
+
+
 class PoseControlDemo(ControlDemo):
     def __init__(self, setpoint_hz=1000):
         super(PoseControlDemo, self).__init__(setpoint_hz)
-        self.static_orient = Quaternion(0.0, 0.0, 0.0, 1.0)
-        self.home = [0.0, -1.125, 2.275, -1.15, 1.571, 0.0]
+
+        robot_type = rospy.get_param("robot_type", "robot6R")
+        self.static_orient = robot_params[robot_type]["orient"]
+        self.home = robot_params[robot_type]["home"]
 
     def run(self):
         self.start_joint_control()
