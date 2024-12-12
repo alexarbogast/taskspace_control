@@ -37,7 +37,7 @@ public:
 
 protected:
   void synchronizeJointStates();
-  void writeCommand(const ctrl::VectorND cmd);
+  void writeCommand(const ctrl::VectorND& cmd);
 
   unsigned int n_joints_;
   std::vector<hardware_interface::JointHandle> joint_handles_;
@@ -55,9 +55,9 @@ protected:
   // state feedback
   KDL::JntArrayVel robot_state_;
 
-private:
-  bool queryPoseService(taskspace_control_msgs::QueryPose::Request& req,
-                        taskspace_control_msgs::QueryPose::Response& resp);
+  virtual bool
+  queryPoseService(taskspace_control_msgs::QueryPose::Request& req,
+                   taskspace_control_msgs::QueryPose::Response& resp);
 
   ros::ServiceServer query_pose_service_;
   bool initialized_ = false;

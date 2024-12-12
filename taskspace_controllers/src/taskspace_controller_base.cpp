@@ -154,7 +154,7 @@ void TaskspaceControllerBase::synchronizeJointStates()
   }
 }
 
-void TaskspaceControllerBase::writeCommand(const ctrl::VectorND cmd)
+void TaskspaceControllerBase::writeCommand(const ctrl::VectorND& cmd)
 {
   for (unsigned int i = 0; i < n_joints_; ++i)
   {

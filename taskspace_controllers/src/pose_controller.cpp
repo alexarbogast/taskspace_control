@@ -13,10 +13,7 @@
 // limitations under the License.
 
 #include <taskspace_controllers/pose_controller.h>
-
-#include "kdl/jacobian.hpp"
-#include "kdl/frames.hpp"
-#include "taskspace_controllers/utility.h"
+#include <taskspace_controllers/utility.h>
 
 #include <pluginlib/class_list_macros.h>
 
