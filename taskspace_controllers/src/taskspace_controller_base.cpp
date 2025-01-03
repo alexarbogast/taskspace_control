@@ -21,6 +21,14 @@
 namespace taskspace_controllers
 {
 
+#define LOAD_ROS_PARAM(nh, param_name, variable)                               \
+  if (!nh.getParam(param_name, variable))                                      \
+  {                                                                            \
+    ROS_ERROR_STREAM("Failed to load parameter '"                              \
+                     << param_name << "' from the parameter server.");         \
+    return false;                                                              \
+  }
+
 bool TaskspaceControllerBase::init(
     hardware_interface::PositionJointInterface* hw, ros::NodeHandle& nh)
 {
@@ -36,24 +44,9 @@ bool TaskspaceControllerBase::init(
     ROS_ERROR("robot_description not found in enclosing namespaces");
     return false;
   }
-  if (!nh.getParam(robot_description, robot_description))
-  {
-    ROS_ERROR_STREAM("Failed to load " << robot_description
-                                       << " from parameter server");
-    return false;
-  }
-  if (!nh.getParam("base_link", base_link_))
-  {
-    ROS_ERROR_STREAM("Failed to load " << nh.getNamespace() + "/base_link"
-                                       << " from parameter server");
-    return false;
-  }
-  if (!nh.getParam("eef_link", eef_link_))
-  {
-    ROS_ERROR_STREAM("Failed to load " << nh.getNamespace() + "/eef_link"
-                                       << " from parameter server");
-    return false;
-  }
+  LOAD_ROS_PARAM(nh, robot_description, robot_description);
+  LOAD_ROS_PARAM(nh, "base_link", base_link_);
+  LOAD_ROS_PARAM(nh, "eef_link", eef_link_);
 
   // Initialize kinematic model
   urdf::Model urdf_model;
@@ -78,12 +71,7 @@ bool TaskspaceControllerBase::init(
 
   // Parse joint limits
   std::vector<std::string> joint_names;
-  if (!nh.getParam("joints", joint_names))
-  {
-    ROS_ERROR_STREAM("Failed to load " << ns << "/joints"
-                                       << " from parameter server");
-    return false;
-  }
+  LOAD_ROS_PARAM(nh, "joints", joint_names);
   n_joints_ = joint_names.size();
 
   upper_pos_limits_.resize(n_joints_);
@@ -129,12 +117,7 @@ bool TaskspaceControllerBase::init(
   robot_state_.resize(n_joints_);
 
   // Find setpoint topic
-  if (!nh.getParam("setpoint_topic", setpoint_topic_))
-  {
-    ROS_ERROR_STREAM("Failed to load " << ns << "/setpoint_topic"
-                                       << " from parameter server");
-    return false;
-  }
+  LOAD_ROS_PARAM(nh, "setpoint_topic", setpoint_topic_);
 
   // Services
   query_pose_service_ = nh.advertiseService(
