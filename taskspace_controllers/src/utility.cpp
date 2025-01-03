@@ -17,20 +17,19 @@
 namespace ctrl
 {
 
-Eigen::MatrixXd leftPinv(const Eigen::MatrixXd& matrix)
+MatrixND leftPinv(const MatrixND& matrix)
 {
   return (matrix.transpose() * matrix).inverse() * matrix.transpose();
 }
 
-Eigen::MatrixXd rightPinv(const Eigen::MatrixXd& matrix)
+MatrixND rightPinv(const MatrixND& matrix)
 {
   return matrix.transpose() * (matrix * matrix.transpose()).inverse();
 }
 
-Eigen::MatrixXd dampedPinv(const Eigen::MatrixXd& matrix, double alpha)
+MatrixND dampedPinv(const MatrixND& matrix, double alpha)
 {
-  Eigen::MatrixXd identity =
-      Eigen::MatrixXd::Identity(matrix.rows(), matrix.rows());
+  MatrixND identity = MatrixND::Identity(matrix.rows(), matrix.rows());
   return matrix.transpose() *
          (matrix * matrix.transpose() + alpha * alpha * identity).inverse();
 }
