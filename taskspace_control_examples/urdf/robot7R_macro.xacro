@@ -126,7 +126,7 @@
         <material name="cream"/>
       </visual>
     </link>
-    <link name="link7">
+    <link name="${prefix}link7">
       <visual name="joint7">
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
