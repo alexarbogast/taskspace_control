@@ -1,4 +1,5 @@
 import numpy as np
+import quaternion
 import rospy
 
 from std_msgs.msg import ColorRGBA
@@ -9,6 +10,14 @@ from .controller_client import ControllerClient, JointControllerClient
 from .controller_manager_client import ControllerManagerClient
 from .path_visualization import PathVisualization
 from .trajectory import *
+
+
+def quaternion_msg_to_np(q: Quaternion) -> quaternion.quaternion:
+    return np.quaternion(q.w, q.x, q.y, q.z)
+
+
+def quaternion_np_to_msg(q: quaternion.quaternion) -> Quaternion:
+    return Quaternion(q.x, q.y, q.z, q.w)
 
 
 class ControlDemo(object):
@@ -22,40 +31,40 @@ class ControlDemo(object):
         self.controller_manager_client = ControllerManagerClient()
         self.path_viz = PathVisualization(0.007, ColorRGBA(0.96, 0.38, 0.21, 1.0))
 
-        self.static_orient = Quaternion(0.0, 0.0, 0.0, 1.0)
+        self.static_orient = np.quaternion(1, 0, 0, 0)
         self.hz = setpoint_hz
 
-    def movel(self, p, tf):
-        current_position = self.get_position()
-        if current_position is None:
-            rospy.logerr("Failed to find current position")
+    def movel(self, p, q, tf):
+        pose = self.get_pose()
+        if pose is None:
+            rospy.logerr("Failed to retrieve current pose")
             return
-        self.execute_linear_path(current_position, p, tf)
+        cur_position = np.array([pose.position.x, pose.position.y, pose.position.z])
+        cur_orient = quaternion_msg_to_np(pose.orientation)
+        self.execute_linear_path(cur_position, p, cur_orient, q, tf)
 
-    def execute_linear_path(self, p_start, p_end, tf):
+    def execute_linear_path(self, p_start, p_end, q_start, q_end, tf):
         tt = np.linspace(0.0, tf, int(self.hz * tf))
         f, f_dot = linear_traj(p_start, p_end, tf)
-        self.execute_path(f(tt), f_dot(tt))
+        q, _ = slerp_traj(q_start, q_end, tf)
+        self.execute_path(f(tt), f_dot(tt), q(tt))
 
-    def execute_path(self, f, f_dot):
+    def execute_path(self, f, f_dot, orient):
         rate = rospy.Rate(self.hz)
         setpoint = PoseTwistSetpoint()
-        setpoint.pose.orientation = self.static_orient
 
-        for ft, f_dott in zip(f, f_dot):
+        if isinstance(orient, quaternion.quaternion):
+            orient = [orient] * len(f)
+
+        for ft, f_dott, q in zip(f, f_dot, orient):
             setpoint.pose.position = Point(*ft)
+            setpoint.pose.orientation = quaternion_np_to_msg(q)
             setpoint.twist.linear = Vector3(*f_dott)
             self.controller_client.publish_setpoint(setpoint)
             rate.sleep()
 
     def get_pose(self):
         return self.controller_client.get_pose()
-
-    def get_position(self):
-        pose = self.get_pose()
-        if pose is None:
-            return None
-        return np.array([pose.position.x, pose.position.y, pose.position.z])
 
     def start_joint_control(self):
         self.controller_manager_client.switch_controller(

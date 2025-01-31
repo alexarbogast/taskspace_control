@@ -11,11 +11,11 @@ from taskspace_control_examples.trajectory import *
 
 robot_params = {
     "robot6R": {
-        "orient": Quaternion(0.0, 0.0, 0.0, 1.0),
+        "orient": np.quaternion(1.0, 0.0, 0.0, 0.0),
         "home": [0.0, -1.125, 2.275, -1.15, 1.571, 0.0],
     },
     "robot7R": {
-        "orient": Quaternion(1.0, 0.0, 0.0, 0.0),
+        "orient": np.quaternion(0.0, 1.0, 0.0, 0.0),
         "home": [0.0, 0.0, 0.0, -np.pi / 2, 0.0, np.pi / 2, 0.0],
     },
 }
@@ -53,8 +53,8 @@ class PoseControlDemo(ControlDemo):
             "base_link",
         )
 
-        self.movel(ft[0], 2)
-        self.execute_path(ft, f_dott)
+        self.movel(ft[0], self.static_orient, 2)
+        self.execute_path(ft, f_dott, self.static_orient)
         self.path_viz.reset()
 
     def hypotrochoid(self):
@@ -71,8 +71,8 @@ class PoseControlDemo(ControlDemo):
             "base_link",
         )
 
-        self.movel(ft[0], 1)
-        self.execute_path(ft, f_dott)
+        self.movel(ft[0], self.static_orient, 1)
+        self.execute_path(ft, f_dott, self.static_orient)
         self.path_viz.reset()
 
 

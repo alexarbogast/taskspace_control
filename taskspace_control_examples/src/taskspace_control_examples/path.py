@@ -7,6 +7,7 @@ p(s(t)): [0, T] -> R^n
 """
 
 import numpy as np
+import quaternion
 
 
 def array_function(func):
@@ -16,6 +17,20 @@ def array_function(func):
         return np.squeeze(result)
 
     return wrapper
+
+
+def slerp_path(q_start, q_end):
+    @array_function
+    def f(s):
+        return np.slerp_vectorized(q_start, q_end, s)
+
+    @array_function
+    def f_dot(s, s_dot):
+        return quaternion.as_rotation_vector(
+            s_dot * f(s) * np.log(q_start.inverse() * q_end)
+        )
+
+    return f, f_dot
 
 
 def linear_path(p_start, p_end):
@@ -89,6 +104,15 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     s = np.linspace(0, 1, 100)
+
+    # orientation path
+    q_start = np.quaternion(1.0, 0.0, 0.0, 0.0)
+    q_end = np.quaternion(1.0, 2.0, 3.0, 4.0)
+
+    f, f_dot = slerp_path(q_start, q_end)
+    fs = f(s)
+    s_dot = np.linspace(0, 1, 100)
+    test = f_dot(s, s_dot)
 
     # linear path
     p_start = np.array([0.0, 0.0, 0.0])

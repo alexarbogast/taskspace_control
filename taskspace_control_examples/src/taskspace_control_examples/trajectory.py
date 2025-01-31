@@ -10,6 +10,12 @@ from taskspace_control_examples.path import *
 from taskspace_control_examples.time_scaling import *
 
 
+def slerp_traj(q_start, q_end, tf, scaling=Order.FIRST):
+    f, f_dot = slerp_path(q_start, q_end)
+    s, s_dot = scaling(tf)
+    return lambda t: f(s(t)), lambda t: f_dot(s(t), s_dot(t))
+
+
 def linear_traj(p_start, p_end, tf, scaling=Order.FIFTH):
     f, f_dot = linear_path(p_start, p_end)
     s, s_dot = scaling(tf)
