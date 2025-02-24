@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import numpy as np
+import quaternion
 import rospy
-
-from geometry_msgs.msg import Quaternion
 
 from taskspace_control_examples import ControlDemo
 from taskspace_control_examples.trajectory import *
