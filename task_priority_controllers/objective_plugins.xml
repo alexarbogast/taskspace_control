@@ -17,7 +17,15 @@
          type="task_priority_controllers::AvoidJointLimits"
          base_class_type="task_priority_controllers::RRObjective">
     <description>
-      A manipulability maximizing redundancy resolution objective
+      A redundancy resolution objective that avoids joint positional limits
+    </description>
+  </class>
+  <class name="match_configuration"
+         type="task_priority_controllers::MatchConfiguration"
+         base_class_type="task_priority_controllers::RRObjective">
+    <description>
+      A redundancy resolution objective that drives the joints towards a desired
+      configuration
     </description>
   </class>
 </library>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>taskspace_control_examples</name>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <description>Task space controller example usage</description>
   <author email="arbogastaw@gmail.com">Alex Arbogast</author>
   <maintainer email="arbogastaw@gmail.com">Alex Arbogast</maintainer>

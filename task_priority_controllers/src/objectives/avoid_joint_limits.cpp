@@ -23,7 +23,10 @@ bool AvoidJointLimits::init(ros::NodeHandle& nh, const KDL::Chain& chain,
                             const KDL::JntArray& upper_pos_limits,
                             const KDL::JntArray& lower_pos_limits)
 {
-  RRObjective::init(nh, chain, upper_pos_limits, lower_pos_limits);
+  if (!RRObjective::init(nh, chain, upper_pos_limits, lower_pos_limits))
+  {
+    return false;
+  }
 
   limits_avg.data = (upper_pos_limits.data + lower_pos_limits.data) / 2;
 

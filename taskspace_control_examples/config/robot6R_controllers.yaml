@@ -54,9 +54,19 @@ task_priority_controller:
 
   setpoint_topic: setpoint
 
-  objective_type: maximize_manipulability
-  rr_objective:
-    k_manip: 10.0
+  rr_objective_type: minimize_velocity # (default)
+
+  # rr_objective_type: maximize_manipulability
+  # rr_objective:
+  #   k_manip: 10.0
+  #
+  # rr_objective_type: avoid_joint_limits
+  # rr_objective:
+  #   k_limits: 10.0
+  #
+  # rr_objective_type: match_configuration
+  # rr_objective:
+  #   match_config: [0.0, -1.125, 2.275, -1.15, 1.571, 0.0]
 
 as_nullspace_controller:
   type: axially_symmetric_controllers/NullspaceController
@@ -76,7 +86,7 @@ as_nullspace_controller:
 
   setpoint_topic: setpoint
 
-  objective_type: maximize_manipulability
+  rr_objective_type: maximize_manipulability
   rr_objective:
     k_manip: 10.0
 
@@ -98,7 +108,7 @@ as_twist_decomposition_controller:
 
   setpoint_topic: setpoint
 
-  objective_type: maximize_manipulability
+  rr_objective_type: maximize_manipulability
   rr_objective:
     k_manip: 10.0
 

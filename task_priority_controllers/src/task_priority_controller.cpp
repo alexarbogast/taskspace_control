@@ -24,7 +24,7 @@ bool TaskPriorityController::init(
 
   // Load redundancy resolution objective
   std::string objective_type = "minimize_velocity";
-  nh.getParam("objective_type", objective_type);
+  nh.getParam("rr_objective_type", objective_type);
 
   rr_objective_loader_ = std::make_unique<pluginlib::ClassLoader<RRObjective>>(
       "task_priority_controllers", "task_priority_controllers::RRObjective");

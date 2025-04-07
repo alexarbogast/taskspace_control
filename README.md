@@ -68,16 +68,16 @@ A basic configuration for the controllers below can be found in the
 
 ### Task-priority Controllers
 
-If the robot is kinematically redundant (i.e. there are more than 6 joints) than a
-[task priority](https://roboticsknowledgebase.com/wiki/actuation/task-prioritization-control/)
+If the robot is kinematically redundant (i.e. there are more than 6 joints) than
+a [task priority](https://roboticsknowledgebase.com/wiki/actuation/task-prioritization-control/)
 controller can be used to achieve a secondary set of objectives in addition to
 tracking the setpoint. This is done through a nullspace projection using the
 robot's Jacobian. The redundancy resolution objective, or secondary priority
 task, is defined by a plugin that's loaded at runtime. See
-[`objective_plugins.xml`](https://roboticsknowledgebase.com/wiki/actuation/task-prioritization-control/)
-for a list of provided plugins.
+[`objective_plugins.xml`](./task_priority_controllers/objective_plugins.xml) for
+a list of provided plugins.
 
-- `taskpriority_controller/PoseController`
+- `task_priority_controllers/PoseController`
 
   This controller tracks a fully defined setpoint and uses the redundant
   degrees-of-freedom to achieve the objective plugin.
