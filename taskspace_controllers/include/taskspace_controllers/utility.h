@@ -29,6 +29,8 @@ typedef Eigen::Matrix3d Matrix3D;
 typedef Eigen::Matrix<double, 6, 6> Matrix6D;
 typedef Eigen::MatrixXd MatrixND;
 typedef Eigen::Quaterniond Quaternion;
+typedef Eigen::AngleAxisd AngleAxis;
+typedef Eigen::Isometry3d Pose;
 
 /**
  * @brief Find the left pseudoinverse of a matrix

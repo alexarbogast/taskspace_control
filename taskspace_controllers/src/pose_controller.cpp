@@ -15,6 +15,7 @@
 #include <taskspace_controllers/pose_controller.h>
 #include <taskspace_controllers/utility.h>
 
+#include <eigen_conversions/eigen_kdl.h>
 #include <pluginlib/class_list_macros.h>
 
 namespace taskspace_controllers
@@ -49,18 +50,19 @@ void PoseController::update(const ros::Time&, const ros::Duration& period)
   KDL::Jacobian jac(n_joints_);
   robot_jacobian_solver_->JntToJac(robot_state_.q, jac);
 
-  KDL::Frame pose;
-  robot_fk_solver_->JntToCart(robot_state_.q, pose);
+  KDL::Frame pose_kdl;
+  robot_fk_solver_->JntToCart(robot_state_.q, pose_kdl);
+
+  ctrl::Pose pose;
+  tf::transformKDLToEigen(pose_kdl, pose);
+
+  ctrl::Pose sp_pose;
+  tf::transformKDLToEigen(setpoint->pose, sp_pose);
 
   /* error */
-  ctrl::Quaternion current_q, setpoint_q;
-  pose.M.GetQuaternion(current_q.x(), current_q.y(), current_q.z(),
-                       current_q.w());
-  setpoint->pose.M.GetQuaternion(setpoint_q.x(), setpoint_q.y(), setpoint_q.z(),
-                                 setpoint_q.w());
-
-  ctrl::Vector3D orient_error = (setpoint_q * current_q.inverse()).vec();
-  ctrl::Vector3D trans_error((setpoint->pose.p - pose.p).data);
+  ctrl::AngleAxis aa(sp_pose.rotation() * pose.rotation().inverse());
+  ctrl::Vector3D orient_error = aa.axis() * aa.angle();
+  ctrl::Vector3D trans_error(sp_pose.translation() - pose.translation());
 
   ctrl::Vector6D cart_cmd;
   cart_cmd << params->k_position * trans_error, params->k_orient * orient_error;
