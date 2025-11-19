@@ -2,13 +2,14 @@
 
 The [**task space**](https://modernrobotics.northwestern.edu/nu-gm-book-resource/2-5-task-space-and-workspace/)
 of a robot refers to the space in which the robot's end-effector or tool
-operates. The `taskspace_control` ROS metapackage provides a set of packages for
+operates.
+The `taskspace_control` ROS metapackage provides a set of packages for
 task-space control of robotic manipulators using the
-[ros_control](https://github.com/ros-controls/ros_control) framework.
+[ros2_control](https://github.com/ros-controls/ros2_control) framework.
 
 ## Package Overview
 
-Each controller created by the `taskspace_control` package subscribes to the
+Each controller provided by the `taskspace_control` package subscribes to the
 same type of setpoint. This setpoint is defined by a pose $p \in SE(3)$ and a
 twist $\xi \in \mathbb{R}^6$. The setpoint is provided to the controller via a
 [`PoseTwistSetpoint.msg`](./taskspace_control_msgs/msg/PoseTwistSetpoint.msg).
@@ -21,15 +22,15 @@ setpoint publisher for the controllers.
 Launch the demo robot system with the desired robot
 
 ```
-roslaunch taskspace_control_examples control_bringup.launch robot:=robot6R
+ ros2 launch taskspace_control_examples robot_bringup.launch.py robot_type:=robot6R
 
-# robot (default "robot6R"): One of 'robot6R', 'robot7R
+# robot_type (default "robot6R"): One of 'robot6R', 'robot7R
 ```
 
 In another terminal, launch the control demo with the desired controller
 
 ```
-roslaunch taskspace_control_examples pose_control_demo.launch controller:=pose_controller
+ros2 launch taskspace_control_examples pose_control_demo.launch robot_type:=robot6R controller:=pose_controller
 
 # controller (default "pose_controller"):
 #    One of 'pose_controller,
@@ -44,11 +45,8 @@ parameters can be modified in the configurations files of the examples package.
 ## Controller Types
 
 A list of available controller plugins can be found in the
-`*_controller_plugin.xml` of each package. The controllers have been implemented
-under the assumption that the hardware*interface accepts position commands. It
-would take a bit of work to template these libraries for velocity or effort
-interfaces, but this \_might* be completed in the future.
-
+`*_controller_plugins.xml` of each package. The controllers are configured to
+work with hardware interfaces that accept a position and (optional) velocity command.
 A basic configuration for the controllers below can be found in the
 `taskspace_control_examples` package config.
 
