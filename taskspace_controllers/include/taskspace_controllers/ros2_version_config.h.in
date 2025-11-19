@@ -1,0 +1,8 @@
+// Cmake will update these defines depending on our current ROS_DISTRO.
+// We use this mechanism to react to API changes in ROS2-control.
+//
+// Adapted from: https://github.com/fzi-forschungszentrum-informatik/cartesian_controllers
+
+#cmakedefine TASKSPACE_CONTROLLERS_HUMBLE
+#cmakedefine TASKSPACE_CONTROLLERS_IRON
+#cmakedefine TASKSPACE_CONTROLLERS_JAZZY

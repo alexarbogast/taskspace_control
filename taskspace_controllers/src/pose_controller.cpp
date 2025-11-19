@@ -15,106 +15,159 @@
 #include <taskspace_controllers/pose_controller.h>
 #include <taskspace_controllers/utility.h>
 
-#include <eigen_conversions/eigen_kdl.h>
-#include <pluginlib/class_list_macros.h>
+#include <memory>
+#include <pluginlib/class_list_macros.hpp>
 
 namespace taskspace_controllers
 {
 
-bool PoseController::init(hardware_interface::PositionJointInterface* hw,
-                          ros::NodeHandle& nh)
+using namespace std::chrono_literals;
+
+controller_interface::CallbackReturn PoseController::on_init()
 {
-  Base::init(hw, nh);
+  // Initialize base class
+  if (TaskspaceControllerBase::on_init() !=
+      controller_interface::CallbackReturn::SUCCESS)
+  {
+    return controller_interface::CallbackReturn::ERROR;
+  }
+
+  // Initialize the PoseController
+  try
+  {
+    pose_param_listener_ =
+        std::make_shared<pose_controller::ParamListener>(get_node());
+  }
+  catch (const std::exception& e)
+  {
+    fprintf(stderr,
+            "Exception thrown during controller's init with message: %s \n",
+            e.what());
+    return controller_interface::CallbackReturn::ERROR;
+  }
+
+  return controller_interface::CallbackReturn::SUCCESS;
+}
+
+controller_interface::CallbackReturn
+PoseController::on_configure(const rclcpp_lifecycle::State& previous_state)
+{
+  auto node = get_node();
+  RCLCPP_INFO(node->get_logger(), "Configuring PoseController...");
+
+  pose_params_ = pose_param_listener_->get_params();
+
+  // Initialize base kinematics and joint info
+  if (TaskspaceControllerBase::on_configure(previous_state) !=
+      controller_interface::CallbackReturn::SUCCESS)
+  {
+    RCLCPP_ERROR(node->get_logger(), "Failed to initialize base controller.");
+    return CallbackReturn::FAILURE;
+  }
 
   robot_jacobian_solver_ =
       std::make_unique<KDL::ChainJntToJacSolver>(robot_chain_);
 
-  sub_setpoint_ =
-      nh.subscribe(setpoint_topic_, 1, &PoseController::setpointCallback, this);
+  // --- Setpoint subscription ---
+  setpoint_subscriber_ =
+      node->create_subscription<taskspace_control_msgs::msg::PoseTwistSetpoint>(
+          node->get_name() + std::string("/") + pose_params_.setpoint_topic, 1,
+          std::bind(&PoseController::setpointCallback, this,
+                    std::placeholders::_1));
 
-  // Dynamic reconfigure
-  dyn_reconf_server_ = std::make_shared<ReconfigureServer>(nh);
-  dyn_reconf_server_->setCallback(std::bind(&PoseController::reconfCallback,
-                                            this, std::placeholders::_1,
-                                            std::placeholders::_2));
-  return true;
+  RCLCPP_INFO(node->get_logger(), "PoseController configured for %u joints.",
+              n_joints_);
+  return CallbackReturn::SUCCESS;
 }
 
-void PoseController::update(const ros::Time&, const ros::Duration& period)
+controller_interface::CallbackReturn
+PoseController::on_activate(const rclcpp_lifecycle::State& previous_state)
 {
-  synchronizeJointStates();  // update state
+  RCLCPP_INFO(get_node()->get_logger(), "Activating PoseController...");
 
-  const DynamicParams* params = dynamic_params_.readFromRT();
-  const Setpoint* setpoint = setpoint_.readFromRT();
+  // Activate base class
+  if (TaskspaceControllerBase::on_activate(previous_state) !=
+      controller_interface::CallbackReturn::SUCCESS)
+  {
+    return controller_interface::CallbackReturn::ERROR;
+  }
+
+  // initialize joint state from hardware
+  read_state_from_hardware(joint_state_);
+
+  Setpoint init_setpoint;
+  robot_fk_solver_->JntToCart(joint_state_.q, init_setpoint.pose);
+  setpoint_buffer_.writeFromNonRT(std::move(init_setpoint));
+  return CallbackReturn::SUCCESS;
+}
+
+controller_interface::CallbackReturn
+PoseController::on_deactivate(const rclcpp_lifecycle::State& /*previous_state*/)
+{
+  RCLCPP_INFO(get_node()->get_logger(), "Deactivating PoseController...");
+  return CallbackReturn::SUCCESS;
+}
+
+controller_interface::return_type PoseController::update(
+    const rclcpp::Time& /*time*/, const rclcpp::Duration& period)
+{
+  auto logger = get_node()->get_logger();
+  if (pose_param_listener_->is_old(pose_params_))
+  {
+    pose_params_ = pose_param_listener_->get_params();
+  }
+
+  read_state_from_hardware(joint_state_);
+  const Setpoint* setpoint = setpoint_buffer_.readFromRT();
 
   KDL::Jacobian jac(n_joints_);
-  robot_jacobian_solver_->JntToJac(robot_state_.q, jac);
+  robot_jacobian_solver_->JntToJac(joint_state_.q, jac);
 
   KDL::Frame pose_kdl;
-  robot_fk_solver_->JntToCart(robot_state_.q, pose_kdl);
+  robot_fk_solver_->JntToCart(joint_state_.q, pose_kdl);
 
   ctrl::Pose pose;
-  tf::transformKDLToEigen(pose_kdl, pose);
+  ctrl::transformKDLToEigen(pose_kdl, pose);
 
   ctrl::Pose sp_pose;
-  tf::transformKDLToEigen(setpoint->pose, sp_pose);
+  ctrl::transformKDLToEigen(setpoint->pose, sp_pose);
 
-  /* error */
+  // --- Error computation ---
   ctrl::AngleAxis aa(sp_pose.rotation() * pose.rotation().inverse());
   ctrl::Vector3D orient_error = aa.axis() * aa.angle();
   ctrl::Vector3D trans_error(sp_pose.translation() - pose.translation());
 
   ctrl::Vector6D cart_cmd;
-  cart_cmd << params->k_position * trans_error, params->k_orient * orient_error;
+  cart_cmd << pose_params_.k_position * trans_error,
+      pose_params_.k_orient * orient_error;
   cart_cmd += setpoint->twist;
 
-  /* control */
+  // --- Control law ---
   ctrl::VectorND joint_cmd = ctrl::rightPinv(jac.data) * cart_cmd;
   ctrl::VectorND new_position =
-      robot_state_.q.data + (joint_cmd * period.toSec());
-  writeCommand(new_position);
-}
+      joint_state_.q.data + (joint_cmd * period.seconds());
 
-void PoseController::starting(const ros::Time&)
-{
-  synchronizeJointStates();
-
-  Setpoint init_setpoint;
-  robot_fk_solver_->JntToCart(robot_state_.q, init_setpoint.pose);
-  setpoint_.initRT(init_setpoint);
-}
-
-void PoseController::stopping(const ros::Time&) {}
-
-void PoseController::reconfCallback(ControllerConfig& config,
-                                    uint16_t /*level*/)
-{
-  DynamicParams dynamic_params;
-  dynamic_params.k_position = config.k_position;
-  dynamic_params.k_orient = config.k_orient;
-
-  dynamic_params_.writeFromNonRT(dynamic_params);
+  auto cmd = create_kdl_state(new_position, joint_cmd);
+  write_command(cmd);
+  return controller_interface::return_type::OK;
 }
 
 void PoseController::setpointCallback(
-    const taskspace_control_msgs::PoseTwistSetpointConstPtr& msg)
+    const std::shared_ptr<taskspace_control_msgs::msg::PoseTwistSetpoint> msg)
 {
   Setpoint setpoint;
   setpoint.pose.p = KDL::Vector(msg->pose.position.x, msg->pose.position.y,
                                 msg->pose.position.z);
-
   setpoint.pose.M = KDL::Rotation::Quaternion(
       msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z,
       msg->pose.orientation.w);
-
   setpoint.twist << msg->twist.linear.x, msg->twist.linear.y,
       msg->twist.linear.z, msg->twist.angular.x, msg->twist.angular.y,
       msg->twist.angular.z;
-
-  setpoint_.writeFromNonRT(setpoint);
+  setpoint_buffer_.writeFromNonRT(setpoint);
 }
 
 }  // namespace taskspace_controllers
 
 PLUGINLIB_EXPORT_CLASS(taskspace_controllers::PoseController,
-                       controller_interface::ControllerBase)
+                       controller_interface::ControllerInterface)

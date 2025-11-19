@@ -15,6 +15,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <kdl/frames.hpp>
 
 namespace ctrl
 {
@@ -62,5 +63,13 @@ MatrixND rightPinv(const MatrixND& matrix);
  * @returns the damped pseudoinverse of "matrix"
  */
 MatrixND dampedPinv(const MatrixND& matrix, double alpha);
+
+/**
+ * @brief Transforms a KDL frame to an Eigen::Isometry3d
+ *
+ * @param e the KDL frame to transform
+ * @param alpha the eigen element to populate with the data from e
+ */
+void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e);
 
 }  // namespace ctrl

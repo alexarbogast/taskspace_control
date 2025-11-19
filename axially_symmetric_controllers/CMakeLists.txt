@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(axially_symmetric_controllers)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -8,42 +8,21 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  urdf
-  kdl_parser
-  taskspace_controllers
-  task_priority_controllers
-  taskspace_control_msgs
-  hardware_interface
-  controller_interface
-  realtime_tools
-  dynamic_reconfigure
-  pluginlib
-)
-
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(urdf REQUIRED)
+find_package(kdl_parser REQUIRED)
 find_package(Eigen3 REQUIRED)
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS
-    roscpp
-    urdf
-    kdl_parser
-    taskspace_controllers
-    task_priority_controllers
-    taskspace_control_msgs
-    hardware_interface
-    controller_interface
-    realtime_tools
-    dynamic_reconfigure
-    pluginlib
-)
+find_package(pluginlib REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(controller_interface REQUIRED)
+find_package(realtime_tools REQUIRED)
+find_package(taskspace_controllers REQUIRED)
+find_package(task_priority_controllers REQUIRED)
+find_package(taskspace_control_msgs REQUIRED)
 
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
 
@@ -52,22 +31,56 @@ add_library(${PROJECT_NAME}
   src/nullspace_controller.cpp
   src/twist_decomposition_controller.cpp
 )
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} Eigen3::Eigen)
-add_dependencies(${PROJECT_NAME}
-  ${catkin_EXPORTED_TARGETS}
+target_link_libraries(${PROJECT_NAME}
+  Eigen3::Eigen
+)
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  urdf
+  kdl_parser
+  pluginlib
+  hardware_interface
+  controller_interface
+  realtime_tools
+  taskspace_controllers
+  task_priority_controllers
+  taskspace_control_msgs
 )
 
-## Installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+pluginlib_export_plugin_description_file(controller_interface axially_symmetric_controller_plugins.xml)
+
+# Install targets and headers
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME}
 )
 
-install(FILES axially_symmetric_controller_plugins.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(
+  FILES axially_symmetric_controller_plugins.xml
+  DESTINATION share/${PROJECT_NAME}
 )
+
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(
+  rclcpp
+  urdf
+  kdl_parser
+  pluginlib
+  hardware_interface
+  controller_interface
+  realtime_tools
+  taskspace_controllers
+  task_priority_controllers
+  taskspace_control_msgs
+)
+
+ament_package()

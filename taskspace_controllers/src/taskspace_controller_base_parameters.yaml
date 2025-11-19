@@ -1,0 +1,30 @@
+taskspace_controller_base:
+  # taskspace_controller params
+  joints: {
+    type: string_array,
+    description: "Name of the joints to control",
+    validation: {
+      not_empty<>: []
+    },
+    read_only: true
+  }
+  command_interfaces: {
+    type: string_array,
+    description: "Names of the interfaces to command",
+    validation: {
+      unique<>: null,
+      size_gt<>: [0],
+      subset_of<>: [["position", "velocity"]],
+    },
+    read_only: true
+  }
+  base_link: {
+    type: string,
+    description: "Name of the base reference frame",
+    read_only: true,
+  }
+  eef_link: {
+    type: string,
+    description: "Name of the 'tool' reference frame",
+    read_only: true,
+  }

@@ -1,0 +1,14 @@
+pose_controller:
+  setpoint_topic: {
+    type: string,
+    description: "The name of the topic containing the setpoint",
+    read_only: true,
+  }
+  k_position: {
+    type: double,
+    description: "The position gain",
+  }
+  k_orient: {
+    type: double,
+    description: "The orientation gain",
+  }

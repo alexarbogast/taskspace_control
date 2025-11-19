@@ -17,4 +17,7 @@
     <child link = "base_link"/>
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </joint>
+
+  <xacro:include filename="$(find taskspace_control_examples)/urdf/robot7R.ros2_control.xacro"/>
+  <xacro:robot7R_ros2_control prefix="$(arg prefix)"/>
 </robot>

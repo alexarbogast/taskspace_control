@@ -2,47 +2,43 @@
 
 import numpy as np
 import quaternion
-import rospy
+import rclpy
+import threading
 
 from taskspace_control_examples import ControlDemo
 from taskspace_control_examples.trajectory import *
 
 
+NODE_NAME = "pose_control_demo"
+
 robot_params = {
     "robot6R": {
         "orient": np.quaternion(1.0, 0.0, 0.0, 0.0),
-        "home": [0.0, -1.125, 2.275, -1.15, 1.571, 0.0],
     },
     "robot7R": {
-        "orient": np.quaternion(0.0, 1.0, 0.0, 0.0),
-        "home": [0.0, 0.0, 0.0, -np.pi / 2, 0.0, np.pi / 2, 0.0],
+        "orient": np.quaternion(0.5, 0.5, 0.5, -0.5),
     },
 }
 
 
 class PoseControlDemo(ControlDemo):
-    def __init__(self, setpoint_hz=1000):
-        super(PoseControlDemo, self).__init__(setpoint_hz)
+    def __init__(self, node_name: str, setpoint_hz=1000):
+        super().__init__(node_name, setpoint_hz)
 
-        robot_type = rospy.get_param("robot_type", "robot6R")
+        # Declare and get ROS2 parameters
+        self.declare_parameter("robot_type", "robot6R")
+        robot_type = self.get_parameter("robot_type").value
+
         self.static_orient = robot_params[robot_type]["orient"]
-        self.home = robot_params[robot_type]["home"]
 
     def run(self):
-        self.start_joint_control()
-        self.joint_controller_client.move_joint(self.home, 1.0)
-
-        self.start_taskspace_control()
         self.circle()
-        self.hypotrochoid()
-
-        self.start_joint_control()
-        self.joint_controller_client.move_joint(self.home, 1.0)
+        # self.hypotrochoid()
 
     def circle(self):
         tf = 5
         tt = np.linspace(0, tf, int(self.hz * tf))
-        f, f_dot = circular_traj(1 / 5, tf)
+        f, f_dot = circular_traj(1 / 6, tf)
 
         offset = np.array([0.5, 0.0, 0.1])
         ft, f_dott = f(tt) + offset, f_dot(tt)
@@ -53,6 +49,7 @@ class PoseControlDemo(ControlDemo):
         )
 
         self.movel(ft[0], self.static_orient, 2)
+
         self.execute_path(ft, f_dott, self.static_orient)
         self.path_viz.reset()
 
@@ -75,11 +72,19 @@ class PoseControlDemo(ControlDemo):
         self.path_viz.reset()
 
 
-if __name__ == "__main__":
-    rospy.init_node("pose_control_demo")
+def main(args=None):
+    rclpy.init(args=args)
+    node = PoseControlDemo("pose_control_demo")
 
     try:
-        demo = PoseControlDemo()
-        demo.run()
-    except rospy.ROSInterruptException:
-        pass
+        threading.Thread(target=rclpy.spin, args=(node,), daemon=True).start()
+        node.run()
+    except Exception as e:
+        node.get_logger().error(f"Exception in demo: {e}")
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()

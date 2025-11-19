@@ -4,18 +4,18 @@ from numpy.typing import NDArray
 import numpy as np
 import quaternion
 
-import rospy
+from rclpy.node import Node
 
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion
 from std_msgs.msg import ColorRGBA
 
-
 MARKER_ARRAY_TOPIC = "visualization_marker_array"
 
 
-class PathVisualization(object):
-    def __init__(self, radius: float, color: ColorRGBA):
+class PathVisualization:
+    def __init__(self, node: Node, radius: float, color: ColorRGBA):
+        self.node = node
         self.r = radius
         self.color = color
         self.marker_id = 0
@@ -28,21 +28,19 @@ class PathVisualization(object):
 
         self.reset_marker = Marker()
         self.reset_marker.ns = "cylinder"
-        self.reset_marker.header.stamp = rospy.Time()
+        self.reset_marker.header.stamp = self.node.get_clock().now().to_msg()
         self.reset_marker.action = Marker.DELETEALL
 
-        self.vis_pub = rospy.Publisher(
-            MARKER_ARRAY_TOPIC, MarkerArray, queue_size=1, latch=True
-        )
+        self.vis_pub = self.node.create_publisher(MarkerArray, MARKER_ARRAY_TOPIC, 1)
 
-    def visualize_path(self, path: List[NDArray], frame="world"):
+    def visualize_path(self, path: List[NDArray], frame: str = "world"):
         marker_array = MarkerArray()
 
         for i in range(len(path) - 1):
             p1, p2 = path[i], path[i + 1]
             marker = self.make_cylinder(p1, p2)
             marker.id = self.marker_id
-            marker.header.stamp = rospy.Time.now()
+            marker.header.stamp = self.node.get_clock().now().to_msg()
             marker.header.frame_id = frame
             marker_array.markers.append(marker)
             self.marker_id += 1
@@ -64,13 +62,13 @@ class PathVisualization(object):
         q = quaternion.from_rotation_vector(angle * axis)
 
         marker = deepcopy(self.cylinder_marker)
-        marker.pose.orientation = Quaternion(q.x, q.y, q.z, q.w)
-        marker.pose.position = Point(center[0], center[1], center[2])
-        marker.scale = Vector3(self.r, self.r, h)
+        marker.pose.orientation = Quaternion(x=q.x, y=q.y, z=q.z, w=q.w)
+        marker.pose.position = Point(x=center[0], y=center[1], z=center[2])
+        marker.scale = Vector3(x=self.r, y=self.r, z=h)
         marker.color = self.color
         return marker
 
     def reset(self):
         self.marker_id = 0
-        marker_array = MarkerArray([self.reset_marker])
+        marker_array = MarkerArray(markers=[self.reset_marker])
         self.vis_pub.publish(marker_array)

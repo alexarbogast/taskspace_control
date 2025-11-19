@@ -34,4 +34,11 @@ MatrixND dampedPinv(const MatrixND& matrix, double alpha)
          (matrix * matrix.transpose() + alpha * alpha * identity).inverse();
 }
 
+void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e)
+{
+  e = Eigen::Isometry3d::Identity();
+  e.linear() =
+      Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(k.M.data);
+}
+
 }  // namespace ctrl
