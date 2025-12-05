@@ -23,7 +23,8 @@ class TwistDecompositionController
   : public task_priority_controllers::PoseController
 {
 public:
-  virtual void update(const ros::Time&, const ros::Duration& period) override;
+  virtual controller_interface::return_type
+  update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 };
 
 }  // namespace axially_symmetric_controllers

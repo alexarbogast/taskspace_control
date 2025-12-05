@@ -4,9 +4,6 @@ project(axially_symmetric_controllers)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif(NOT CMAKE_BUILD_TYPE)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -16,30 +13,28 @@ find_package(Eigen3 REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(controller_interface REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 find_package(realtime_tools REQUIRED)
+find_package(taskspace_control_msgs REQUIRED)
 find_package(taskspace_controllers REQUIRED)
 find_package(task_priority_controllers REQUIRED)
-find_package(taskspace_control_msgs REQUIRED)
 
 include_directories(
   include
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   src/utility.cpp
   src/nullspace_controller.cpp
   src/twist_decomposition_controller.cpp
 )
-target_link_libraries(${PROJECT_NAME}
-  Eigen3::Eigen
-)
+
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   urdf
   kdl_parser
   pluginlib
-  hardware_interface
   controller_interface
   realtime_tools
   taskspace_controllers
@@ -47,7 +42,10 @@ ament_target_dependencies(${PROJECT_NAME}
   taskspace_control_msgs
 )
 
-pluginlib_export_plugin_description_file(controller_interface axially_symmetric_controller_plugins.xml)
+pluginlib_export_plugin_description_file(
+  controller_interface
+  axially_symmetric_controller_plugins.xml
+)
 
 # Install targets and headers
 install(
@@ -75,7 +73,6 @@ ament_export_dependencies(
   urdf
   kdl_parser
   pluginlib
-  hardware_interface
   controller_interface
   realtime_tools
   taskspace_controllers

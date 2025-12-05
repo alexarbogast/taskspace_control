@@ -6,10 +6,10 @@ controller_manager:
       type: taskspace_controllers/PoseController
     task_priority_controller:
       type: task_priority_controllers/PoseController
-    # as_nullspace_controller:
-    #   type: axially_symmetric_controllers/NullspaceController
-    # as_twist_decomposition_controller:
-    #   type: axially_symmetric_controllers/TwistDecompositionController
+    as_nullspace_controller:
+      type: axially_symmetric_controllers/NullspaceController
+    as_twist_decomposition_controller:
+      type: axially_symmetric_controllers/TwistDecompositionController
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -72,46 +72,52 @@ task_priority_controller:
     # rr_objective:
     #   match_config: [0.0, -1.125, 2.275, -1.15, 1.571, 0.0]
 
-# as_nullspace_controller:
-#   ros__parameters:
-#     joints:
-#       - joint1
-#       - joint2
-#       - joint3
-#       - joint4
-#       - joint5
-#       - joint6
-#
-#     base_link: base_link
-#     eef_link: tool
-#
-#     k_position: 10.0
-#     k_orient: 10.0
-#
-#     setpoint_topic: setpoint
-#
-#     rr_objective_type: maximize_manipulability
-#     rr_objective:
-#       k_manip: 10.0
-#
-# as_twist_decomposition_controller:
-#   ros__parameters:
-#     joints:
-#       - joint1
-#       - joint2
-#       - joint3
-#       - joint4
-#       - joint5
-#       - joint6
-#
-#     base_link: base_link
-#     eef_link: tool
-#
-#     k_position: 10.0
-#     k_orient: 10.0
-#
-#     setpoint_topic: setpoint
-#
-#     rr_objective_type: maximize_manipulability
-#     rr_objective:
-#       k_manip: 10.0
+as_nullspace_controller:
+  ros__parameters:
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+      - joint7
+
+    command_interfaces:
+      - position
+
+    base_link: base_link
+    eef_link: tool
+
+    k_position: 10.0
+    k_orient: 10.0
+
+    setpoint_topic: setpoint
+
+    rr_objective_type: maximize_manipulability
+    k_manip: 100.0
+
+as_twist_decomposition_controller:
+  ros__parameters:
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+
+    command_interfaces:
+      - position
+
+    base_link: base_link
+    eef_link: tool
+
+    k_position: 10.0
+    k_orient: 10.0
+
+    setpoint_topic: setpoint
+
+    rr_objective_type: maximize_manipulability
+    rr_objective:
+      k_manip: 10.0

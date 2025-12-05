@@ -17,40 +17,44 @@
 
 namespace axially_symmetric_controllers
 {
-
-void TwistDecompositionController::update(const ros::Time&,
-                                          const ros::Duration& period)
+controller_interface::return_type TwistDecompositionController::update(
+    const rclcpp::Time& /*time*/, const rclcpp::Duration& period)
 {
-  synchronizeJointStates();  // update state
+  if (pose_param_listener_->is_old(pose_params_))
+  {
+    pose_params_ = pose_param_listener_->get_params();
+  }
 
-  const DynamicParams* params = dynamic_params_.readFromRT();
-  const Setpoint* setpoint = setpoint_.readFromRT();
+  read_state_from_hardware(joint_state_);
+  const Setpoint* setpoint = setpoint_buffer_.readFromRT();
 
   KDL::Jacobian jac(n_joints_);
-  robot_jacobian_solver_->JntToJac(robot_state_.q, jac);
+  robot_jacobian_solver_->JntToJac(joint_state_.q, jac);
 
-  KDL::Frame pose;
-  robot_fk_solver_->JntToCart(robot_state_.q, pose);
+  KDL::Frame pose_kdl;
+  robot_fk_solver_->JntToCart(joint_state_.q, pose_kdl);
 
-  /* error */
-  ctrl::Vector3D aim_current(pose.M.UnitZ().data);
+  // --- Error computation ---
+  ctrl::Vector3D aim_current(pose_kdl.M.UnitZ().data);
   ctrl::Vector3D aim_desired(setpoint->pose.M.UnitZ().data);
 
   ctrl::Vector3D rot_axis = axisBetween(aim_current, aim_desired);
   double rot_angle = angleBetween(aim_current, aim_desired);
 
-  ctrl::Vector3D orient_error = rot_angle * rot_axis;
-  ctrl::Vector3D pos_error((setpoint->pose.p - pose.p).data);
+  ctrl::Vector2D orient_error(rot_axis.x(), rot_axis.y());
+  orient_error *= rot_angle;
+
+  ctrl::Vector3D pos_error((setpoint->pose.p - pose_kdl.p).data);
 
   ctrl::Vector6D cart_cmd;
-  cart_cmd << params->k_position * pos_error + setpoint->twist.head<3>(),
-      params->k_orient * orient_error;
+  cart_cmd << pose_params_.k_position * pos_error + setpoint->twist.head<3>(),
+      pose_params_.k_orient * orient_error;
 
-  /* redundancy resolution */
-  ctrl::VectorND h = rr_objective_->getJointControlCmd(robot_state_);
+  // --- Redundancy resolution ---
+  ctrl::VectorND h = rr_objective_->getJointControlCmd(joint_state_);
 
-  /* twist decomposition */
-  ctrl::Vector3D e(pose.M.UnitZ().data);
+  // --- Twist decomposition ---
+  ctrl::Vector3D e(pose_kdl.M.UnitZ().data);
   ctrl::Matrix3D eeT = e * e.transpose();
 
   ctrl::Matrix6D T = ctrl::Matrix6D::Zero();
@@ -59,7 +63,7 @@ void TwistDecompositionController::update(const ros::Time&,
 
   ctrl::Vector3D perp_cmd = eeT * jac.data.block(3, 0, 3, n_joints_) * h;
 
-  /* control */
+  // --- Control ---
   ctrl::MatrixND J = jac.data;
   ctrl::MatrixND J_pinv = ctrl::rightPinv(J);
 
@@ -69,14 +73,16 @@ void TwistDecompositionController::update(const ros::Time&,
   ctrl::VectorND joint_cmd = J_pinv * mod_cart_cmd;
 
   ctrl::VectorND new_position =
-      robot_state_.q.data + (joint_cmd * period.toSec());
+      joint_state_.q.data + (joint_cmd * period.seconds());
 
-  writeCommand(new_position);
+  auto cmd = create_kdl_state(new_position, joint_cmd);
+  write_command(cmd);
+  return controller_interface::return_type::OK;
 }
 
 }  // namespace axially_symmetric_controllers
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
     axially_symmetric_controllers::TwistDecompositionController,
-    controller_interface::ControllerBase)
+    controller_interface::ControllerInterface)
