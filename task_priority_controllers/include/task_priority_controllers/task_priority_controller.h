@@ -17,7 +17,9 @@
 #include <taskspace_controllers/taskspace_controller_base.h>
 #include <task_priority_controllers/objectives/objective_plugin.h>
 
-#include <pluginlib/class_loader.h>
+#include <task_priority_controllers/task_priority_controller_parameters.hpp>
+
+#include <pluginlib/class_loader.hpp>
 
 namespace task_priority_controllers
 {
@@ -26,11 +28,16 @@ class TaskPriorityController
   : public virtual taskspace_controllers::TaskspaceControllerBase
 {
 public:
-  virtual bool init(hardware_interface::PositionJointInterface* hw,
-                    ros::NodeHandle& nh) override;
+  virtual controller_interface::CallbackReturn on_init() override;
+
+  virtual controller_interface::CallbackReturn
+  on_configure(const rclcpp_lifecycle::State& previous_state) override;
 
 protected:
   typedef taskspace_controllers::TaskspaceControllerBase Base;
+
+  std::shared_ptr<ParamListener> tp_param_listener_;
+  Params tp_params_;
 
   // redundancy resolution objective
   std::shared_ptr<RRObjective> rr_objective_;

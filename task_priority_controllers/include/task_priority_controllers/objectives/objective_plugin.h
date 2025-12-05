@@ -14,7 +14,8 @@
 
 #pragma once
 
-#include <ros/ros.h>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+
 #include <taskspace_controllers/utility.h>
 
 #include <kdl/chain.hpp>
@@ -27,9 +28,11 @@ class RRObjective
 public:
   RRObjective() = default;
 
-  virtual bool init(ros::NodeHandle& nh, const KDL::Chain& chain,
+  virtual bool init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+                    const KDL::Chain& chain,
                     const KDL::JntArray& upper_pos_limits,
                     const KDL::JntArray& lower_pos_limits);
+
   virtual ctrl::VectorND
   getJointControlCmd(const KDL::JntArrayVel& joint_state) = 0;
 

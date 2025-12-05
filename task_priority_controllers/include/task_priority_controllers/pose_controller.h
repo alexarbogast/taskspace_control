@@ -24,11 +24,13 @@ class PoseController : public TaskPriorityController,
                        public taskspace_controllers::PoseController
 {
 public:
-  virtual bool init(hardware_interface::PositionJointInterface* hw,
-                    ros::NodeHandle& nh) override;
-  virtual void update(const ros::Time&, const ros::Duration& period) override;
-  virtual void starting(const ros::Time&) override;
-  virtual void stopping(const ros::Time&) override;
+  virtual controller_interface::CallbackReturn on_init() override;
+
+  virtual controller_interface::CallbackReturn
+  on_configure(const rclcpp_lifecycle::State& previous_state) override;
+
+  virtual controller_interface::return_type
+  update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 };
 
 }  // namespace task_priority_controllers

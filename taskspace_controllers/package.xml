@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>taskspace_controllers</name>
   <version>0.1.0</version>
-  <description>A base package for task space controllers</description>
+  <description>A base package for task-space controllers</description>
   <author email="arbogastaw@gmail.com">Alex Arbogast</author>
   <maintainer email="arbogastaw@gmail.com">Alex Arbogast</maintainer>
   <license>Apache2</license>

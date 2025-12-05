@@ -17,7 +17,8 @@
 namespace task_priority_controllers
 {
 
-bool RRObjective::init(ros::NodeHandle& nh, const KDL::Chain& chain,
+bool RRObjective::init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+                       const KDL::Chain& chain,
                        const KDL::JntArray& upper_pos_limits,
                        const KDL::JntArray& lower_pos_limits)
 {

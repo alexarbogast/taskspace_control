@@ -111,7 +111,6 @@ PoseController::on_deactivate(const rclcpp_lifecycle::State& /*previous_state*/)
 controller_interface::return_type PoseController::update(
     const rclcpp::Time& /*time*/, const rclcpp::Duration& period)
 {
-  auto logger = get_node()->get_logger();
   if (pose_param_listener_->is_old(pose_params_))
   {
     pose_params_ = pose_param_listener_->get_params();

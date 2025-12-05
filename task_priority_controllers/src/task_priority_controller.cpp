@@ -13,35 +13,76 @@
 // limitations under the License.
 
 #include <task_priority_controllers/task_priority_controller.h>
+#include <controller_interface/controller_interface_base.hpp>
 
 namespace task_priority_controllers
 {
 
-bool TaskPriorityController::init(
-    hardware_interface::PositionJointInterface* hw, ros::NodeHandle& nh)
+controller_interface::CallbackReturn TaskPriorityController::on_init()
 {
-  Base::init(hw, nh);
+  // Initialize base class
+  if (Base::on_init() != controller_interface::CallbackReturn::SUCCESS)
+  {
+    return controller_interface::CallbackReturn::ERROR;
+  }
 
-  // Load redundancy resolution objective
-  std::string objective_type = "minimize_velocity";
-  nh.getParam("rr_objective_type", objective_type);
+  // Initialize the TaskPriorityController
+  try
+  {
+    tp_param_listener_ =
+        std::make_shared<task_priority_controllers::ParamListener>(get_node());
+  }
+  catch (const std::exception& e)
+  {
+    fprintf(stderr,
+            "Exception thrown during controller's init with message: %s \n",
+            e.what());
+    return controller_interface::CallbackReturn::ERROR;
+  }
+
+  return controller_interface::CallbackReturn::SUCCESS;
+}
+
+controller_interface::CallbackReturn TaskPriorityController::on_configure(
+    const rclcpp_lifecycle::State& previous_state)
+{
+  auto node = get_node();
+  RCLCPP_INFO(node->get_logger(), "Configuring TaskPriorityController...");
+
+  tp_params_ = tp_param_listener_->get_params();
+
+  if (Base::on_configure(previous_state) !=
+      controller_interface::CallbackReturn::SUCCESS)
+  {
+    RCLCPP_ERROR(node->get_logger(), "Failed to initialize base controller.");
+    return CallbackReturn::FAILURE;
+  }
 
   rr_objective_loader_ = std::make_unique<pluginlib::ClassLoader<RRObjective>>(
       "task_priority_controllers", "task_priority_controllers::RRObjective");
 
   try
   {
-    rr_objective_ = rr_objective_loader_->createUniqueInstance(objective_type);
+    rr_objective_ = rr_objective_loader_->createUniqueInstance(
+        tp_params_.rr_objective_type);
   }
   catch (const pluginlib::PluginlibException& e)
   {
-    ROS_ERROR_STREAM(
-        "Failed to load redundancy resolution plugin. Execption: " << e.what());
-    return false;
+    RCLCPP_ERROR(node->get_logger(),
+                 "Failed to load redundancy resolution plugin. Execption: %s",
+                 e.what());
+    return CallbackReturn::FAILURE;
   }
 
-  return rr_objective_->init(nh, robot_chain_, upper_pos_limits_,
-                             lower_pos_limits_);
+  if (!rr_objective_->init(node, robot_chain_, upper_pos_limits_,
+                           lower_pos_limits_))
+  {
+    RCLCPP_ERROR(node->get_logger(),
+                 "Failed to initialize redundancy resolution objective.");
+    return CallbackReturn::FAILURE;
+  }
+
+  return CallbackReturn::SUCCESS;
 }
 
 }  // namespace task_priority_controllers

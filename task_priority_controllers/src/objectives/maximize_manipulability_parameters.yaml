@@ -1,0 +1,6 @@
+maximize_manipulability:
+  k_manip: {
+    type: double,
+    default_value: 1.0,
+    description: "The gain to scale the manipulability gradient"
+  }

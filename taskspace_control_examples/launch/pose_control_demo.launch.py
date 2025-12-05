@@ -10,7 +10,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "controller",
-            choices=["pose_controller"],
+            choices=["pose_controller", "task_priority_controller"],
             default_value="pose_controller",
             description="Which controller should be started?",
         )

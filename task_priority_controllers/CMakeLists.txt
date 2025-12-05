@@ -1,96 +1,143 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(task_priority_controllers)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif(NOT CMAKE_BUILD_TYPE)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  urdf
-  kdl_parser
-  taskspace_controllers
-  taskspace_control_msgs
-  hardware_interface
-  controller_interface
-  realtime_tools
-  dynamic_reconfigure
-  pluginlib
-)
-
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(urdf REQUIRED)
+find_package(kdl_parser REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(controller_interface REQUIRED)
+find_package(generate_parameter_library REQUIRED)
+find_package(realtime_tools REQUIRED)
+find_package(taskspace_control_msgs REQUIRED)
+find_package(taskspace_controllers REQUIRED)
 
-generate_dynamic_reconfigure_options(
-  cfg/ManipulabilityObjective.cfg
-  cfg/JointLimitsObjective.cfg
-  cfg/MatchConfigObjective.cfg
+## objective parameters
+generate_parameter_library(
+  maximize_manipulability_parameters
+  src/objectives/maximize_manipulability_parameters.yaml
 )
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME} rr_objectives
-  CATKIN_DEPENDS
-    roscpp
-    urdf
-    kdl_parser
-    taskspace_controllers
-    taskspace_control_msgs
-    hardware_interface
-    controller_interface
-    realtime_tools
-    dynamic_reconfigure
-    pluginlib
+# generate_parameter_library(
+#   avoid_joint_limits_parameters
+#   src/objectives/avoid_joint_limits_parameters.yaml
+# )
+#
+# generate_parameter_library(
+#   match_configuration_parameters
+#   src/objectives/match_configuration_parameters.yaml
+# )
+
+## controller paramaters
+generate_parameter_library(
+  task_priority_controller_parameters
+  src/task_priority_controller_parameters.yaml
 )
 
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
 
 ## redundancy resolution objectives
-add_library(rr_objectives
+add_library(rr_objectives SHARED
   src/objectives/objective_plugin.cpp
   src/objectives/minimize_velocity.cpp
   src/objectives/maximize_manipulability.cpp
-  src/objectives/avoid_joint_limits.cpp
-  src/objectives/match_configuration.cpp
+  # src/objectives/avoid_joint_limits.cpp
+  # src/objectives/match_configuration.cpp
 )
-target_link_libraries(rr_objectives ${catkin_LIBRARIES} Eigen3::Eigen)
-add_dependencies(rr_objectives
-  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
-  ${catkin_EXPORTED_TARGETS}
+target_link_libraries(rr_objectives
+  maximize_manipulability_parameters
+  # avoid_joint_limits_parameters
+  # match_configuration_parameters
+)
+ament_target_dependencies(rr_objectives
+  rclcpp
+  urdf
+  kdl_parser
+  pluginlib
+  controller_interface
+  realtime_tools
+  taskspace_control_msgs
+  taskspace_controllers
+)
+
+pluginlib_export_plugin_description_file(
+  task_priority_controllers
+  objective_plugins.xml
 )
 
 ## task_priority_controllers
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   src/task_priority_controller.cpp
   src/pose_controller.cpp
   src/objectives/objective_plugin.cpp
 )
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
-add_dependencies(${PROJECT_NAME}
-  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
-  ${catkin_EXPORTED_TARGETS}
+target_link_libraries(${PROJECT_NAME}
+  task_priority_controller_parameters
+)
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  urdf
+  kdl_parser
+  pluginlib
+  controller_interface
+  realtime_tools
+  taskspace_control_msgs
+  taskspace_controllers
 )
 
-## Installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+pluginlib_export_plugin_description_file(
+  controller_interface
+  task_priority_controller_plugins.xml
 )
 
-install(TARGETS ${PROJECT_NAME} rr_objectives
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# Installation
+install(
+  TARGETS
+    ${PROJECT_NAME}
+    rr_objectives
+    maximize_manipulability_parameters
+    # avoid_joint_limits_parameters
+    # match_configuration_parameters
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME}
 )
 
 install(
   FILES
     task_priority_controller_plugins.xml
     objective_plugins.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
+
+# Export interfaces for downstream packages
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME} rr_objectives)
+ament_export_dependencies(
+  rclcpp
+  urdf
+  kdl_parser
+  pluginlib
+  controller_interface
+  generate_parameter_library
+  realtime_tools
+  taskspace_control_msgs
+  taskspace_controllers
+)
+
+ament_package()

@@ -4,8 +4,8 @@ controller_manager:
     update_rate: 250  # Hz
     pose_controller:
       type: taskspace_controllers/PoseController
-    # task_priority_controller:
-    #   type: task_priority_controllers/PoseController
+    task_priority_controller:
+      type: task_priority_controllers/PoseController
     # as_nullspace_controller:
     #   type: axially_symmetric_controllers/NullspaceController
     # as_twist_decomposition_controller:
@@ -35,38 +35,41 @@ pose_controller:
 
     setpoint_topic: setpoint
 
-# task_priority_controller:
-#   ros__parameters:
-#     joints:
-#       - joint1
-#       - joint2
-#       - joint3
-#       - joint4
-#       - joint5
-#       - joint6
-#
-#     base_link: base_link
-#     eef_link: tool
-#
-#     k_position: 10.0
-#     k_orient: 10.0
-#
-#     setpoint_topic: setpoint
-#
-#     rr_objective_type: minimize_velocity # (default)
-#
-#     # rr_objective_type: maximize_manipulability
-#     # rr_objective:
-#     #   k_manip: 10.0
-#     #
-#     # rr_objective_type: avoid_joint_limits
-#     # rr_objective:
-#     #   k_limits: 10.0
-#     #
-#     # rr_objective_type: match_configuration
-#     # rr_objective:
-#     #   match_config: [0.0, -1.125, 2.275, -1.15, 1.571, 0.0]
-#
+task_priority_controller:
+  ros__parameters:
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+
+    command_interfaces:
+      - position
+
+    base_link: base_link
+    eef_link: tool
+
+    k_position: 10.0
+    k_orient: 10.0
+
+    setpoint_topic: setpoint
+
+    rr_objective_type: minimize_velocity # (default)
+
+    # rr_objective_type: maximize_manipulability
+    # rr_objective:
+    #   k_manip: 10.0
+    #
+    # rr_objective_type: avoid_joint_limits
+    # rr_objective:
+    #   k_limits: 10.0
+    #
+    # rr_objective_type: match_configuration
+    # rr_objective:
+    #   match_config: [0.0, -1.125, 2.275, -1.15, 1.571, 0.0]
+
 # as_nullspace_controller:
 #   ros__parameters:
 #     joints:

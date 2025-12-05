@@ -13,17 +13,19 @@
 // limitations under the License.
 
 #include <task_priority_controllers/objectives/maximize_manipulability.h>
+#include "taskspace_controllers/utility.h"
 
 namespace task_priority_controllers
 {
 
 static double MANIP_THRESHOLD = 1e-10;
 
-bool MaximizeManipulability::init(ros::NodeHandle& nh, const KDL::Chain& chain,
+bool MaximizeManipulability::init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+                                  const KDL::Chain& chain,
                                   const KDL::JntArray& upper_pos_limits,
                                   const KDL::JntArray& lower_pos_limits)
 {
-  if (!RRObjective::init(nh, chain, upper_pos_limits, lower_pos_limits))
+  if (!RRObjective::init(node, chain, upper_pos_limits, lower_pos_limits))
   {
     return false;
   }
@@ -34,12 +36,18 @@ bool MaximizeManipulability::init(ros::NodeHandle& nh, const KDL::Chain& chain,
   robot_jacobian_dot_solver_ =
       std::make_unique<KDL::ChainJntToJacDotSolver>(robot_chain_);
 
-  // Dynamic reconfigure
-  dyn_reconf_server_ =
-      std::make_shared<ReconfigureServer>(ros::NodeHandle(nh, "rr_objective"));
-  dyn_reconf_server_->setCallback(
-      std::bind(&MaximizeManipulability::reconfCallback, this,
-                std::placeholders::_1, std::placeholders::_2));
+  try
+  {
+    param_listener_ =
+        std::make_shared<maximize_manipulability::ParamListener>(node);
+  }
+  catch (const std::exception& e)
+  {
+    fprintf(stderr,
+            "Exception thrown during rr objective init with message: %s \n",
+            e.what());
+    return false;
+  }
 
   return true;
 }
@@ -47,7 +55,7 @@ bool MaximizeManipulability::init(ros::NodeHandle& nh, const KDL::Chain& chain,
 ctrl::VectorND
 MaximizeManipulability::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 {
-  const DynamicParams* params = dynamic_params_.readFromRT();
+  params_ = param_listener_->get_params();
 
   KDL::Jacobian jac(n_joints_);
   robot_jacobian_solver_->JntToJac(joint_state.q, jac);
@@ -75,19 +83,11 @@ MaximizeManipulability::getJointControlCmd(const KDL::JntArrayVel& joint_state)
                         .cwiseProduct(J_JT_inv)
                         .sum();
   }
-  return manip_grad *= manip * params->k_manip;
-}
-
-void MaximizeManipulability::reconfCallback(ObjectiveConfig& config,
-                                            uint16_t /*level*/)
-{
-  DynamicParams dynamic_params;
-  dynamic_params.k_manip = config.k_manip;
-  dynamic_params_.writeFromNonRT(dynamic_params);
+  return manip_grad *= manip * params_.k_manip;
 }
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::MaximizeManipulability,
                        task_priority_controllers::RRObjective)

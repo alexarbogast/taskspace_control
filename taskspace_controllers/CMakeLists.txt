@@ -71,7 +71,10 @@ pluginlib_export_plugin_description_file(
 
 # Installation
 install(
-  TARGETS ${PROJECT_NAME} pose_controller_parameters
+  TARGETS
+    ${PROJECT_NAME}
+    pose_controller_parameters
+    taskspace_controller_base_parameters
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -84,8 +87,8 @@ install(
 )
 
 install(
-  FILES taskspace_controller_plugins.xml
-  DESTINATION share/${PROJECT_NAME}
+  FILES ${CMAKE_BINARY_DIR}/ros2_version_config.h
+  DESTINATION include/${PROJECT_NAME}
 )
 
 # Export interfaces for downstream packages

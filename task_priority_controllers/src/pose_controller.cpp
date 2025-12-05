@@ -13,70 +13,101 @@
 // limitations under the License.
 
 #include <task_priority_controllers/pose_controller.h>
+#include <taskspace_controllers/utility.h>
+
+#include <kdl/jacobian.hpp>
 
 namespace task_priority_controllers
 {
 
-bool PoseController::init(hardware_interface::PositionJointInterface* hw,
-                          ros::NodeHandle& nh)
+controller_interface::CallbackReturn PoseController::on_init()
 {
-  taskspace_controllers::PoseController::init(hw, nh);
-  TaskPriorityController::init(hw, nh);
-  return true;
+  if (taskspace_controllers::PoseController::on_init() !=
+          controller_interface::CallbackReturn::SUCCESS ||
+      TaskPriorityController::on_init() !=
+          controller_interface::CallbackReturn::SUCCESS)
+  {
+    return controller_interface::CallbackReturn::ERROR;
+  }
+  return controller_interface::CallbackReturn::SUCCESS;
 }
 
-void PoseController::update(const ros::Time&, const ros::Duration& period)
+controller_interface::CallbackReturn
+PoseController::on_configure(const rclcpp_lifecycle::State& previous_state)
 {
-  synchronizeJointStates();  // update state
+  auto node = get_node();
+  RCLCPP_INFO(node->get_logger(), "Configuring PoseController...");
 
-  const DynamicParams* params = dynamic_params_.readFromRT();
-  const Setpoint* setpoint = setpoint_.readFromRT();
+  if (taskspace_controllers::PoseController::on_configure(previous_state) !=
+      controller_interface::CallbackReturn::SUCCESS)
+  {
+    RCLCPP_ERROR(node->get_logger(),
+                 "Failed to initialize base pose controller.");
+    return CallbackReturn::FAILURE;
+  }
+
+  if (TaskPriorityController::on_configure(previous_state) !=
+      controller_interface::CallbackReturn::SUCCESS)
+  {
+    RCLCPP_ERROR(node->get_logger(),
+                 "Failed to initialize task-priority controller.");
+    return CallbackReturn::FAILURE;
+  }
+
+  return CallbackReturn::SUCCESS;
+}
+
+controller_interface::return_type PoseController::update(
+    const rclcpp::Time& /*time*/, const rclcpp::Duration& period)
+{
+  if (pose_param_listener_->is_old(pose_params_))
+  {
+    pose_params_ = pose_param_listener_->get_params();
+  }
+
+  read_state_from_hardware(joint_state_);
+  const Setpoint* setpoint = setpoint_buffer_.readFromRT();
 
   KDL::Jacobian jac(n_joints_);
-  robot_jacobian_solver_->JntToJac(robot_state_.q, jac);
+  robot_jacobian_solver_->JntToJac(joint_state_.q, jac);
 
-  KDL::Frame pose;
-  robot_fk_solver_->JntToCart(robot_state_.q, pose);
+  KDL::Frame pose_kdl;
+  robot_fk_solver_->JntToCart(joint_state_.q, pose_kdl);
 
-  /* error */
-  ctrl::Quaternion current_q, setpoint_q;
-  pose.M.GetQuaternion(current_q.x(), current_q.y(), current_q.z(),
-                       current_q.w());
-  setpoint->pose.M.GetQuaternion(setpoint_q.x(), setpoint_q.y(), setpoint_q.z(),
-                                 setpoint_q.w());
+  ctrl::Pose pose;
+  ctrl::transformKDLToEigen(pose_kdl, pose);
 
-  ctrl::Vector3D orient_error = (setpoint_q * current_q.inverse()).vec();
-  ctrl::Vector3D trans_error((setpoint->pose.p - pose.p).data);
+  ctrl::Pose sp_pose;
+  ctrl::transformKDLToEigen(setpoint->pose, sp_pose);
+
+  // --- Error computation ---
+  ctrl::AngleAxis aa(sp_pose.rotation() * pose.rotation().inverse());
+  ctrl::Vector3D orient_error = aa.axis() * aa.angle();
+  ctrl::Vector3D trans_error(sp_pose.translation() - pose.translation());
 
   ctrl::Vector6D cart_cmd;
-  cart_cmd << params->k_position * trans_error, params->k_orient * orient_error;
+  cart_cmd << pose_params_.k_position * trans_error,
+      pose_params_.k_orient * orient_error;
   cart_cmd += setpoint->twist;
 
-  /* redundancy resolution */
-  ctrl::VectorND h = rr_objective_->getJointControlCmd(robot_state_);
+  // --- Redundancy resolution ---
+  ctrl::VectorND h = rr_objective_->getJointControlCmd(joint_state_);
 
-  /* control */
+  // --- Control law ---
   static ctrl::MatrixND I = ctrl::MatrixND::Identity(n_joints_, n_joints_);
   ctrl::MatrixND J_pinv = ctrl::rightPinv(jac.data);
   ctrl::VectorND joint_cmd = J_pinv * cart_cmd + (I - J_pinv * jac.data) * h;
 
   ctrl::VectorND new_position =
-      robot_state_.q.data + (joint_cmd * period.toSec());
-  writeCommand(new_position);
-}
+      joint_state_.q.data + (joint_cmd * period.seconds());
 
-void PoseController::starting(const ros::Time& time)
-{
-  taskspace_controllers::PoseController::starting(time);
-}
-
-void PoseController::stopping(const ros::Time& time)
-{
-  taskspace_controllers::PoseController::stopping(time);
+  auto cmd = create_kdl_state(new_position, joint_cmd);
+  write_command(cmd);
+  return controller_interface::return_type::OK;
 }
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::PoseController,
-                       controller_interface::ControllerBase)
+                       controller_interface::ControllerInterface)

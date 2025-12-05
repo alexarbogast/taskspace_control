@@ -25,6 +25,6 @@ MinimizeVelocity::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::MinimizeVelocity,
                        task_priority_controllers::RRObjective)
