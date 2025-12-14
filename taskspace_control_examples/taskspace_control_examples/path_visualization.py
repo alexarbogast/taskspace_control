@@ -14,7 +14,7 @@ MARKER_ARRAY_TOPIC = "visualization_marker_array"
 
 
 class PathVisualization:
-    def __init__(self, node: Node, radius: float, color: ColorRGBA):
+    def __init__(self, node: Node, radius: float, color: ColorRGBA, ns: str = ""):
         self.node = node
         self.r = radius
         self.color = color
@@ -31,7 +31,8 @@ class PathVisualization:
         self.reset_marker.header.stamp = self.node.get_clock().now().to_msg()
         self.reset_marker.action = Marker.DELETEALL
 
-        self.vis_pub = self.node.create_publisher(MarkerArray, MARKER_ARRAY_TOPIC, 1)
+        topic = f"{ns}/{MARKER_ARRAY_TOPIC}" if ns else MARKER_ARRAY_TOPIC
+        self.vis_pub = self.node.create_publisher(MarkerArray, topic, 1)
 
     def visualize_path(self, path: List[NDArray], frame: str = "world"):
         marker_array = MarkerArray()

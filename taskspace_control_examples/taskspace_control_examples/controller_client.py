@@ -19,7 +19,9 @@ class ControllerClient:
         )
 
         # Service client
-        self.pose_client = self.node.create_client(QueryPose, "/query_pose")
+        self.pose_client = self.node.create_client(
+            QueryPose, f"/{self.name}/query_pose"
+        )
         if not self.pose_client.wait_for_service(timeout_sec=5.0):
             self.node.get_logger().error("query_pose service not available")
             raise RuntimeError("Service not available")

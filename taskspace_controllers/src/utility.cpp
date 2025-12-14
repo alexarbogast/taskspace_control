@@ -39,6 +39,7 @@ void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e)
   e = Eigen::Isometry3d::Identity();
   e.linear() =
       Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(k.M.data);
+  e.translation() = Eigen::Map<const Eigen::Vector3d>(k.p.data);
 }
 
 }  // namespace ctrl

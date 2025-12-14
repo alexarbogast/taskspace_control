@@ -182,7 +182,7 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
 
   // Create service for query_pose
   query_pose_service_ = get_node()->create_service<QueryPose>(
-      "query_pose",
+      get_node()->get_name() + std::string("/query_pose"),
       std::bind(&TaskspaceControllerBase::queryPoseServiceCb, this,
                 std::placeholders::_1, std::placeholders::_2));
 
