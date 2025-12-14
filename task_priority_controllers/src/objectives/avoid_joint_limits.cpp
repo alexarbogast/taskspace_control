@@ -14,48 +14,47 @@
 
 #include <task_priority_controllers/objectives/avoid_joint_limits.h>
 
+#include <task_priority_controllers/avoid_joint_limits_parameters.hpp>
+
 namespace task_priority_controllers
 {
 
-static double MANIP_THRESHOLD = 1e-10;
-
-bool AvoidJointLimits::init(ros::NodeHandle& nh, const KDL::Chain& chain,
-                            const KDL::JntArray& upper_pos_limits,
-                            const KDL::JntArray& lower_pos_limits)
+bool AvoidJointLimits::init(
+    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+    const KDL::Chain& chain, const KDL::JntArray& upper_pos_limits,
+    const KDL::JntArray& lower_pos_limits)
 {
-  if (!RRObjective::init(nh, chain, upper_pos_limits, lower_pos_limits))
+  if (!RRObjective::init(node, chain, upper_pos_limits, lower_pos_limits))
   {
     return false;
   }
 
   limits_avg.data = (upper_pos_limits.data + lower_pos_limits.data) / 2;
 
-  // Dynamic reconfigure
-  dyn_reconf_server_ =
-      std::make_shared<ReconfigureServer>(ros::NodeHandle(nh, "rr_objective"));
-  dyn_reconf_server_->setCallback(std::bind(&AvoidJointLimits::reconfCallback,
-                                            this, std::placeholders::_1,
-                                            std::placeholders::_2));
+  try
+  {
+    param_listener_ = std::make_shared<avoid_joint_limits::ParamListener>(node);
+  }
+  catch (const std::exception& e)
+  {
+    fprintf(stderr,
+            "Exception thrown during rr objective init with message: %s \n",
+            e.what());
+    return false;
+  }
+
   return true;
 }
 
 ctrl::VectorND
 AvoidJointLimits::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 {
-  const DynamicParams* params = dynamic_params_.readFromRT();
-  return params->k_limits * (limits_avg.data - joint_state.q.data);
-}
-
-void AvoidJointLimits::reconfCallback(ObjectiveConfig& config,
-                                      uint16_t /*level*/)
-{
-  DynamicParams dynamic_params;
-  dynamic_params.k_limits = config.k_limits;
-  dynamic_params_.writeFromNonRT(dynamic_params);
+  params_ = param_listener_->get_params();
+  return params_.k_limits * (limits_avg.data - joint_state.q.data);
 }
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::AvoidJointLimits,
                        task_priority_controllers::RRObjective)

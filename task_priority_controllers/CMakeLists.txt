@@ -24,15 +24,15 @@ generate_parameter_library(
   src/objectives/maximize_manipulability_parameters.yaml
 )
 
-# generate_parameter_library(
-#   avoid_joint_limits_parameters
-#   src/objectives/avoid_joint_limits_parameters.yaml
-# )
-#
-# generate_parameter_library(
-#   match_configuration_parameters
-#   src/objectives/match_configuration_parameters.yaml
-# )
+generate_parameter_library(
+  avoid_joint_limits_parameters
+  src/objectives/avoid_joint_limits_parameters.yaml
+)
+
+generate_parameter_library(
+  match_configuration_parameters
+  src/objectives/match_configuration_parameters.yaml
+)
 
 ## controller paramaters
 generate_parameter_library(
@@ -50,13 +50,13 @@ add_library(rr_objectives SHARED
   src/objectives/objective_plugin.cpp
   src/objectives/minimize_velocity.cpp
   src/objectives/maximize_manipulability.cpp
-  # src/objectives/avoid_joint_limits.cpp
-  # src/objectives/match_configuration.cpp
+  src/objectives/avoid_joint_limits.cpp
+  src/objectives/match_configuration.cpp
 )
 target_link_libraries(rr_objectives
   maximize_manipulability_parameters
-  # avoid_joint_limits_parameters
-  # match_configuration_parameters
+  avoid_joint_limits_parameters
+  match_configuration_parameters
 )
 ament_target_dependencies(rr_objectives
   rclcpp
@@ -105,8 +105,8 @@ install(
     ${PROJECT_NAME}
     rr_objectives
     maximize_manipulability_parameters
-    # avoid_joint_limits_parameters
-    # match_configuration_parameters
+    avoid_joint_limits_parameters
+    match_configuration_parameters
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib

@@ -1,0 +1,6 @@
+avoid_joint_limits:
+  k_limits: {
+    type: double,
+    default_value: 1.0,
+    description: "The gain to scale the joint limit error"
+  }

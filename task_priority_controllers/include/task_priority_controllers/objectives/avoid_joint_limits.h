@@ -16,9 +16,7 @@
 
 #include <task_priority_controllers/objectives/objective_plugin.h>
 
-#include <realtime_tools/realtime_buffer.h>
-#include <dynamic_reconfigure/server.h>
-#include <task_priority_controllers/JointLimitsObjectiveConfig.h>
+#include <task_priority_controllers/avoid_joint_limits_parameters.hpp>
 
 namespace task_priority_controllers
 {
@@ -28,28 +26,18 @@ class AvoidJointLimits : public RRObjective
 public:
   AvoidJointLimits() = default;
 
-  virtual bool init(ros::NodeHandle& nh, const KDL::Chain& chain,
+  virtual bool init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+                    const KDL::Chain& chain,
                     const KDL::JntArray& upper_pos_limits,
                     const KDL::JntArray& lower_pos_limits) override;
   virtual ctrl::VectorND
   getJointControlCmd(const KDL::JntArrayVel& joint_state) override;
 
 protected:
-  typedef JointLimitsObjectiveConfig ObjectiveConfig;
-  typedef dynamic_reconfigure::Server<ObjectiveConfig> ReconfigureServer;
-
-  void reconfCallback(ObjectiveConfig& config, uint16_t /*level*/);
+  std::shared_ptr<avoid_joint_limits::ParamListener> param_listener_;
+  avoid_joint_limits::Params params_;
 
   KDL::JntArray limits_avg;
-
-  // dynamic reconfigure
-  struct DynamicParams
-  {
-    DynamicParams() = default;
-    double k_limits = 1.0;
-  };
-  realtime_tools::RealtimeBuffer<DynamicParams> dynamic_params_;
-  std::shared_ptr<ReconfigureServer> dyn_reconf_server_;
 };
 
 }  // namespace task_priority_controllers

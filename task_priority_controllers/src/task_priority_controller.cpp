@@ -65,6 +65,10 @@ controller_interface::CallbackReturn TaskPriorityController::on_configure(
   {
     rr_objective_ = rr_objective_loader_->createUniqueInstance(
         tp_params_.rr_objective_type);
+    RCLCPP_INFO_STREAM(node->get_logger(),
+                       "\033[32mLoaded RR Objective: \033[0m"
+                       "\033[1;32m"
+                           << tp_params_.rr_objective_type << "\033[0m");
   }
   catch (const pluginlib::PluginlibException& e)
   {

@@ -19,63 +19,55 @@ namespace task_priority_controllers
 
 const static std::string CONFIG_PARAM = "match_config";
 
-bool MatchConfiguration::init(ros::NodeHandle& nh, const KDL::Chain& chain,
-                              const KDL::JntArray& upper_pos_limits,
-                              const KDL::JntArray& lower_pos_limits)
+bool MatchConfiguration::init(
+    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+    const KDL::Chain& chain, const KDL::JntArray& upper_pos_limits,
+    const KDL::JntArray& lower_pos_limits)
 {
-  if (!RRObjective::init(nh, chain, upper_pos_limits, lower_pos_limits))
+  if (!RRObjective::init(node, chain, upper_pos_limits, lower_pos_limits))
   {
     return false;
   }
 
-  // Read home configuration from ros parameters
-  ros::NodeHandle pnh(nh, "rr_objective");
-  std::vector<double> home_config;
-  if (!pnh.getParam(CONFIG_PARAM, home_config))
+  try
   {
-    ROS_ERROR_STREAM("Failed to load " << pnh.getNamespace() << "/"
-                                       << CONFIG_PARAM
-                                       << " from parameter server");
+    param_listener_ =
+        std::make_shared<match_configuration::ParamListener>(node);
+  }
+  catch (const std::exception& e)
+  {
+    fprintf(stderr,
+            "Exception thrown during rr objective init with message: %s \n",
+            e.what());
     return false;
   }
+
+  params_ = param_listener_->get_params();
   config_.data = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(
-      home_config.data(), home_config.size());
+      params_.match_config.data(), params_.match_config.size());
 
-  if (home_config.size() != n_joints_)
+  if (params_.match_config.size() != n_joints_)
   {
-    ROS_ERROR_STREAM("Number of joints in " << pnh.getNamespace() << "/"
-                                            << CONFIG_PARAM
-                                            << " does not match robot chain");
+    const auto msg = std::string("Number of joints in ") +
+                     node->get_namespace() + "/" + CONFIG_PARAM +
+                     " does not match robot chain";
+    RCLCPP_ERROR(node->get_logger(), "%s", msg.c_str());
     return false;
   }
-  return true;
 
-  // Dynamic reconfigure
-  dyn_reconf_server_ =
-      std::make_shared<ReconfigureServer>(ros::NodeHandle(nh, "rr_objective"));
-  dyn_reconf_server_->setCallback(std::bind(&MatchConfiguration::reconfCallback,
-                                            this, std::placeholders::_1,
-                                            std::placeholders::_2));
   return true;
 }
 
 ctrl::VectorND
 MatchConfiguration::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 {
-  const DynamicParams* params = dynamic_params_.readFromRT();
-  return params->k_config * (config_.data - joint_state.q.data);
-}
-
-void MatchConfiguration::reconfCallback(ObjectiveConfig& config,
-                                        uint16_t /*level*/)
-{
-  DynamicParams dynamic_params;
-  dynamic_params.k_config = config.k_config;
-  dynamic_params_.writeFromNonRT(dynamic_params);
+  // const DynamicParams* params = dynamic_params_.readFromRT();
+  params_ = param_listener_->get_params();
+  return params_.k_config * (config_.data - joint_state.q.data);
 }
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::MatchConfiguration,
                        task_priority_controllers::RRObjective)

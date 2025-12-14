@@ -1,0 +1,10 @@
+match_configuration:
+  match_config: {
+    type: double_array,
+    description: "The configuration that the objective tries to match"
+  }
+  k_config: {
+    type: double,
+    default_value: 1.0,
+    description: "The gain to scale the configuration error"
+  }
