@@ -14,12 +14,13 @@
 
 #pragma once
 
-#include <task_priority_controllers/pose_controller.h>
+#include <task_priority_controllers/pose_controller.hpp>
 
 namespace axially_symmetric_controllers
 {
 
-class NullspaceController : public task_priority_controllers::PoseController
+class TwistDecompositionController
+  : public task_priority_controllers::PoseController
 {
 public:
   virtual controller_interface::return_type

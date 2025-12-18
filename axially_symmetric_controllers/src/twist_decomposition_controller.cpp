@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <axially_symmetric_controllers/twist_decomposition_controller.h>
-#include <axially_symmetric_controllers/utility.h>
+#include <axially_symmetric_controllers/twist_decomposition_controller.hpp>
+#include <axially_symmetric_controllers/utility.hpp>
 
 namespace axially_symmetric_controllers
 {

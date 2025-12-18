@@ -14,23 +14,16 @@
 
 #pragma once
 
-#include <task_priority_controllers/task_priority_controller.h>
-#include <taskspace_controllers/pose_controller.h>
+#include <task_priority_controllers/pose_controller.hpp>
 
-namespace task_priority_controllers
+namespace axially_symmetric_controllers
 {
 
-class PoseController : public TaskPriorityController,
-                       public taskspace_controllers::PoseController
+class NullspaceController : public task_priority_controllers::PoseController
 {
 public:
-  virtual controller_interface::CallbackReturn on_init() override;
-
-  virtual controller_interface::CallbackReturn
-  on_configure(const rclcpp_lifecycle::State& previous_state) override;
-
   virtual controller_interface::return_type
   update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 };
 
-}  // namespace task_priority_controllers
+}  // namespace axially_symmetric_controllers

@@ -1,4 +1,4 @@
-# Task Space Controllers
+# Task-space Controllers
 
 The [**task space**](https://modernrobotics.northwestern.edu/nu-gm-book-resource/2-5-task-space-and-workspace/)
 of a robot refers to the space in which the robot's end-effector or tool
@@ -21,17 +21,19 @@ setpoint publisher for the controllers.
 
 Launch the demo robot system with the desired robot
 
-```
+```sh
  ros2 launch taskspace_control_examples robot_bringup.launch.py robot_type:=robot6R
-
+```
+```
 # robot_type (default "robot6R"): One of 'robot6R', 'robot7R
 ```
 
 In another terminal, launch the control demo with the desired controller
 
-```
+```sh
 ros2 launch taskspace_control_examples pose_control_demo.launch robot_type:=robot6R controller:=pose_controller
-
+```
+```
 # controller (default "pose_controller"):
 #    One of 'pose_controller,
 #            task_priority_controller,

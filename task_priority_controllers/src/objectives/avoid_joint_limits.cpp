@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/objectives/avoid_joint_limits.h>
+#include <task_priority_controllers/objectives/avoid_joint_limits.hpp>
 
 #include <task_priority_controllers/avoid_joint_limits_parameters.hpp>
 

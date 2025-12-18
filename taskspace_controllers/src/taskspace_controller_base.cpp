@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <taskspace_controllers/taskspace_controller_base.h>
+#include <taskspace_controllers/taskspace_controller_base.hpp>
 #include <controller_interface/helpers.hpp>
 
 #include <urdf/model.h>

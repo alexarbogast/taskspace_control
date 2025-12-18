@@ -14,8 +14,8 @@
 
 #pragma once
 
-#include <taskspace_controllers/taskspace_controller_base.h>
-#include <taskspace_controllers/setpoint.h>
+#include <taskspace_controllers/taskspace_controller_base.hpp>
+#include <taskspace_controllers/setpoint.hpp>
 
 #include <kdl/chainjnttojacsolver.hpp>
 

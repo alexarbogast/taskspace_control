@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <taskspace_controllers/utility.h>
+#include <taskspace_controllers/utility.hpp>
 
 #include <kdl/chain.hpp>
 #include <kdl/jntarray.hpp>

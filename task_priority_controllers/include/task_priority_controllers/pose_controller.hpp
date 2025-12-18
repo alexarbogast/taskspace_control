@@ -14,17 +14,23 @@
 
 #pragma once
 
-#include <task_priority_controllers/pose_controller.h>
+#include <task_priority_controllers/task_priority_controller.hpp>
+#include <taskspace_controllers/pose_controller.hpp>
 
-namespace axially_symmetric_controllers
+namespace task_priority_controllers
 {
 
-class TwistDecompositionController
-  : public task_priority_controllers::PoseController
+class PoseController : public TaskPriorityController,
+                       public taskspace_controllers::PoseController
 {
 public:
+  virtual controller_interface::CallbackReturn on_init() override;
+
+  virtual controller_interface::CallbackReturn
+  on_configure(const rclcpp_lifecycle::State& previous_state) override;
+
   virtual controller_interface::return_type
   update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 };
 
-}  // namespace axially_symmetric_controllers
+}  // namespace task_priority_controllers

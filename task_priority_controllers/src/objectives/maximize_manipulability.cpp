@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/objectives/maximize_manipulability.h>
-#include "taskspace_controllers/utility.h"
+#include <task_priority_controllers/objectives/maximize_manipulability.hpp>
+#include "taskspace_controllers/utility.hpp"
 
 namespace task_priority_controllers
 {

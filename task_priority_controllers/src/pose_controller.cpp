@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/pose_controller.h>
-#include <taskspace_controllers/utility.h>
+#include <task_priority_controllers/pose_controller.hpp>
+#include <taskspace_controllers/utility.hpp>
 
 #include <kdl/jacobian.hpp>
 

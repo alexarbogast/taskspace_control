@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/objectives/match_configuration.h>
+#include <task_priority_controllers/objectives/match_configuration.hpp>
 
 namespace task_priority_controllers
 {

@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <task_priority_controllers/objectives/objective_plugin.h>
+#include <task_priority_controllers/objectives/objective_plugin.hpp>
 
 #include <task_priority_controllers/avoid_joint_limits_parameters.hpp>
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <taskspace_controllers/pose_controller.h>
-#include <taskspace_controllers/utility.h>
+#include <taskspace_controllers/pose_controller.hpp>
+#include <taskspace_controllers/utility.hpp>
 
 #include <memory>
 #include <pluginlib/class_list_macros.hpp>

@@ -14,18 +14,22 @@
 
 #pragma once
 
-#include <task_priority_controllers/objectives/objective_plugin.h>
+#include <taskspace_controllers/utility.hpp>
+#include <kdl/frames.hpp>
 
-namespace task_priority_controllers
+namespace taskspace_controllers
 {
 
-class MinimizeVelocity : public RRObjective
+struct PoseTwistSetpoint
 {
-public:
-  MinimizeVelocity() = default;
+  PoseTwistSetpoint(const KDL::Frame& pose = KDL::Frame::Identity(),
+                    const ctrl::Vector6D& twist = ctrl::Vector6D::Zero())
+    : pose(pose), twist(twist)
+  {
+  }
 
-  virtual ctrl::VectorND
-  getJointControlCmd(const KDL::JntArrayVel& joint_state) override;
+  KDL::Frame pose;
+  ctrl::Vector6D twist;
 };
 
-}  // namespace task_priority_controllers
+}  // namespace taskspace_controllers

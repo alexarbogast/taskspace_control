@@ -14,8 +14,8 @@
 
 #pragma once
 
-#include <taskspace_controllers/taskspace_controller_base.h>
-#include <task_priority_controllers/objectives/objective_plugin.h>
+#include <taskspace_controllers/taskspace_controller_base.hpp>
+#include <task_priority_controllers/objectives/objective_plugin.hpp>
 
 #include <task_priority_controllers/task_priority_controller_parameters.hpp>
 

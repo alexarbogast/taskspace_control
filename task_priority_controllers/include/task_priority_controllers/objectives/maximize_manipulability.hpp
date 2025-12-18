@@ -14,34 +14,35 @@
 
 #pragma once
 
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <task_priority_controllers/objectives/objective_plugin.hpp>
+#include <memory>
 
-#include <taskspace_controllers/utility.h>
+#include <kdl/chainjnttojacsolver.hpp>
+#include <kdl/chainjnttojacdotsolver.hpp>
 
-#include <kdl/chain.hpp>
-#include <kdl/jntarrayvel.hpp>
+#include <task_priority_controllers/maximize_manipulability_parameters.hpp>
 
 namespace task_priority_controllers
 {
-class RRObjective
+
+class MaximizeManipulability : public RRObjective
 {
 public:
-  RRObjective() = default;
+  MaximizeManipulability() = default;
 
   virtual bool init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
                     const KDL::Chain& chain,
                     const KDL::JntArray& upper_pos_limits,
-                    const KDL::JntArray& lower_pos_limits);
-
+                    const KDL::JntArray& lower_pos_limits) override;
   virtual ctrl::VectorND
-  getJointControlCmd(const KDL::JntArrayVel& joint_state) = 0;
+  getJointControlCmd(const KDL::JntArrayVel& joint_state) override;
 
 protected:
-  unsigned int n_joints_;
-  KDL::Chain robot_chain_;
+  std::shared_ptr<maximize_manipulability::ParamListener> param_listener_;
+  maximize_manipulability::Params params_;
 
-  KDL::JntArray upper_pos_limits_;
-  KDL::JntArray lower_pos_limits_;
+  std::unique_ptr<KDL::ChainJntToJacSolver> robot_jacobian_solver_;
+  std::unique_ptr<KDL::ChainJntToJacDotSolver> robot_jacobian_dot_solver_;
 };
 
 }  // namespace task_priority_controllers
