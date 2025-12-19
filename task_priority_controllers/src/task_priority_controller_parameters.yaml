@@ -3,4 +3,7 @@ task_priority_controllers:
     type: string,
     description: "The name of the redundancy resolution objective",
     read_only: true,
+    validation: {
+      one_of<>: [["minimize_velocity", "maximize_manipulability", "avoid_joint_limits", "match_configuration"]]
+    }
   }

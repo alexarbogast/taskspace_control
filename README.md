@@ -31,7 +31,7 @@ Launch the demo robot system with the desired robot
 In another terminal, launch the control demo with the desired controller
 
 ```sh
-ros2 launch taskspace_control_examples pose_control_demo.launch robot_type:=robot6R controller:=pose_controller
+ros2 launch taskspace_control_examples pose_control_demo.launch.py robot_type:=robot6R controller:=pose_controller
 ```
 ```
 # controller (default "pose_controller"):

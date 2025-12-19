@@ -224,20 +224,32 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_activate(
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
+controller_interface::return_type TaskspaceControllerBase::update(
+    const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
+{
+  // derived classes will compute command vector and call write_command()
+  return controller_interface::return_type::OK;
+}
+
 controller_interface::CallbackReturn TaskspaceControllerBase::on_deactivate(
     const rclcpp_lifecycle::State& /*previous_state*/)
 {
   // release loaned interfaces if needed (framework often handles this)
   joint_command_handles_.clear();
   joint_state_handles_.clear();
+  this->release_interfaces();
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::return_type TaskspaceControllerBase::update(
-    const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
+controller_interface::CallbackReturn TaskspaceControllerBase::on_shutdown(
+    const rclcpp_lifecycle::State& previous_state)
 {
-  // derived classes will compute command vector and call write_command()
-  return controller_interface::return_type::OK;
+  stop_motion();
+
+  joint_command_handles_.clear();
+  joint_state_handles_.clear();
+  this->release_interfaces();
+  return controller_interface::CallbackReturn::SUCCESS;
 }
 
 void TaskspaceControllerBase::read_state_from_hardware(KDL::JntArrayVel& state)
@@ -277,6 +289,23 @@ void TaskspaceControllerBase::write_command(const KDL::JntArrayVel& cmd)
     }
   }
   last_commanded_ = cmd;
+}
+
+void TaskspaceControllerBase::stop_motion()
+{
+  // Stop motion for velocity control
+  if (has_velocity_command_interface_)
+  {
+    size_t pos_ind = 0;
+    size_t vel_ind = (has_position_command_interface_) ?
+                         pos_ind + has_velocity_command_interface_ :
+                         pos_ind;
+
+    for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
+    {
+      command_interfaces_[vel_ind * n_joints_ + joint_ind].set_value(0.0);
+    }
+  }
 }
 
 KDL::JntArrayVel TaskspaceControllerBase::create_kdl_state(

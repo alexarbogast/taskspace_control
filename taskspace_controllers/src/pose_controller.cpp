@@ -101,13 +101,6 @@ PoseController::on_activate(const rclcpp_lifecycle::State& previous_state)
   return CallbackReturn::SUCCESS;
 }
 
-controller_interface::CallbackReturn
-PoseController::on_deactivate(const rclcpp_lifecycle::State& /*previous_state*/)
-{
-  RCLCPP_INFO(get_node()->get_logger(), "Deactivating PoseController...");
-  return CallbackReturn::SUCCESS;
-}
-
 controller_interface::return_type PoseController::update(
     const rclcpp::Time& /*time*/, const rclcpp::Duration& period)
 {

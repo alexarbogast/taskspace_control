@@ -58,14 +58,19 @@ public:
   virtual controller_interface::return_type
   update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
-protected:
-  const std::vector<std::string> allowed_interface_types_ = {
-    hardware_interface::HW_IF_POSITION,
-    hardware_interface::HW_IF_VELOCITY,
-  };
+  virtual controller_interface::CallbackReturn
+  on_shutdown(const rclcpp_lifecycle::State& previous_state) override;
 
+protected:
+  // Hardware interface methods
   void read_state_from_hardware(KDL::JntArrayVel& state);
+  void stop_motion();
   void write_command(const KDL::JntArrayVel& cmd);
+
+  // Callbacks
+  using QueryPose = taskspace_control_msgs::srv::QueryPose;
+  virtual bool queryPoseServiceCb(const std::shared_ptr<QueryPose::Request> req,
+                                  std::shared_ptr<QueryPose::Response> resp);
 
   KDL::JntArrayVel create_kdl_state(const ctrl::VectorND& q,
                                     const ctrl::VectorND& qdot);
@@ -73,6 +78,7 @@ protected:
   std::shared_ptr<taskspace_controller_base::ParamListener> param_listener_;
   taskspace_controller_base::Params params_;
 
+  // Hardware interface configuration
   template <typename T>
   using InterfaceReferences =
       std::vector<std::vector<std::reference_wrapper<T>>>;
@@ -82,32 +88,34 @@ protected:
   InterfaceReferences<hardware_interface::LoanedStateInterface>
       joint_state_handles_;
 
+  const std::vector<std::string> allowed_interface_types_ = {
+    hardware_interface::HW_IF_POSITION,
+    hardware_interface::HW_IF_VELOCITY,
+  };
+
   bool has_position_command_interface_ = false;
   bool has_velocity_command_interface_ = false;
 
+  // Controller parameters
   unsigned int n_joints_ = 0;
   std::string base_link_, eef_link_;
 
-  // kinematics
+  // Kinematics
   KDL::Chain robot_chain_;
   KDL::JntArray upper_pos_limits_;
   KDL::JntArray lower_pos_limits_;
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> robot_fk_solver_;
 
-  // state feedback
+  // State tracking
+  KDL::JntArrayVel joint_state_;
   KDL::JntArrayVel last_commanded_;
   KDL::JntArrayVel last_reference_;
 
-  // control loop data
-  KDL::JntArrayVel joint_state_;
-
-  using QueryPose = taskspace_control_msgs::srv::QueryPose;
+  // Services
   rclcpp::Service<QueryPose>::SharedPtr query_pose_service_;
 
-  virtual bool queryPoseServiceCb(const std::shared_ptr<QueryPose::Request> req,
-                                  std::shared_ptr<QueryPose::Response> resp);
-
 private:
+  // Helper methods
   bool
   contains_interface_type(const std::vector<std::string>& interface_type_list,
                           const std::string& interface_type);
