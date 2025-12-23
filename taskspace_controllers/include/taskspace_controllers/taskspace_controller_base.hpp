@@ -72,9 +72,6 @@ protected:
   virtual bool queryPoseServiceCb(const std::shared_ptr<QueryPose::Request> req,
                                   std::shared_ptr<QueryPose::Response> resp);
 
-  KDL::JntArrayVel create_kdl_state(const ctrl::VectorND& q,
-                                    const ctrl::VectorND& qdot);
-
   std::shared_ptr<taskspace_controller_base::ParamListener> param_listener_;
   taskspace_controller_base::Params params_;
 
@@ -113,12 +110,6 @@ protected:
 
   // Services
   rclcpp::Service<QueryPose>::SharedPtr query_pose_service_;
-
-private:
-  // Helper methods
-  bool
-  contains_interface_type(const std::vector<std::string>& interface_type_list,
-                          const std::string& interface_type);
 };
 
 }  // namespace taskspace_controllers

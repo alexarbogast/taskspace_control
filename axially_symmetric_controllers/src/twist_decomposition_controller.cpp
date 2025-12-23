@@ -75,7 +75,7 @@ controller_interface::return_type TwistDecompositionController::update(
   ctrl::VectorND new_position =
       joint_state_.q.data + (joint_cmd * period.seconds());
 
-  auto cmd = create_kdl_state(new_position, joint_cmd);
+  auto cmd = ctrl::transformEigenToKDL(new_position, joint_cmd);
   write_command(cmd);
   return controller_interface::return_type::OK;
 }

@@ -16,6 +16,7 @@
 
 #include <Eigen/Dense>
 #include <kdl/frames.hpp>
+#include <kdl/jntarrayvel.hpp>
 
 namespace ctrl
 {
@@ -71,5 +72,24 @@ MatrixND dampedPinv(const MatrixND& matrix, double alpha);
  * @param alpha the eigen element to populate with the data from e
  */
 void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e);
+
+/**
+ * @brief Transforms a robot state (position + velocity) to a KDL::JntArrayVel
+ *
+ * @param q the joint position
+ * @param qdot the joint velocity
+ */
+KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
+                                     const ctrl::VectorND& qdot);
+
+/**
+ * @brief Determine if a list of interfaces includes a certain type
+ *
+ * @param interface_type_list a list of posible interfaces
+ * @param interface_type the type to find in the list of interfaces
+ */
+bool contains_interface_type(
+    const std::vector<std::string>& interface_type_list,
+    const std::string& interface_type);
 
 }  // namespace ctrl

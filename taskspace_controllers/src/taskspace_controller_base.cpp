@@ -119,9 +119,9 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
     itf.reserve(params_.joints.size());
   }
 
-  has_position_command_interface_ = contains_interface_type(
+  has_position_command_interface_ = ctrl::contains_interface_type(
       params_.command_interfaces, hardware_interface::HW_IF_POSITION);
-  has_velocity_command_interface_ = contains_interface_type(
+  has_velocity_command_interface_ = ctrl::contains_interface_type(
       params_.command_interfaces, hardware_interface::HW_IF_VELOCITY);
 
   joint_state_handles_.resize(allowed_interface_types_.size());
@@ -306,26 +306,6 @@ void TaskspaceControllerBase::stop_motion()
       command_interfaces_[vel_ind * n_joints_ + joint_ind].set_value(0.0);
     }
   }
-}
-
-KDL::JntArrayVel TaskspaceControllerBase::create_kdl_state(
-    const ctrl::VectorND& q, const ctrl::VectorND& qdot)
-{
-  const size_t n = q.size();
-  KDL::JntArrayVel out(n);
-
-  Eigen::Map<Eigen::VectorXd>(out.q.data.data(), n) = q;
-  Eigen::Map<Eigen::VectorXd>(out.qdot.data.data(), n) = qdot;
-
-  return out;
-}
-
-bool TaskspaceControllerBase::contains_interface_type(
-    const std::vector<std::string>& interface_type_list,
-    const std::string& interface_type)
-{
-  return std::find(interface_type_list.begin(), interface_type_list.end(),
-                   interface_type) != interface_type_list.end();
 }
 
 bool TaskspaceControllerBase::queryPoseServiceCb(

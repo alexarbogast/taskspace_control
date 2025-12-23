@@ -42,4 +42,24 @@ void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e)
   e.translation() = Eigen::Map<const Eigen::Vector3d>(k.p.data);
 }
 
+KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
+                                     const ctrl::VectorND& qdot)
+{
+  const size_t n = q.size();
+  KDL::JntArrayVel out(n);
+
+  Eigen::Map<Eigen::VectorXd>(out.q.data.data(), n) = q;
+  Eigen::Map<Eigen::VectorXd>(out.qdot.data.data(), n) = qdot;
+
+  return out;
+}
+
+bool contains_interface_type(
+    const std::vector<std::string>& interface_type_list,
+    const std::string& interface_type)
+{
+  return std::find(interface_type_list.begin(), interface_type_list.end(),
+                   interface_type) != interface_type_list.end();
+}
+
 }  // namespace ctrl
