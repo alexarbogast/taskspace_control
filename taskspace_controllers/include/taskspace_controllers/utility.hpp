@@ -15,6 +15,8 @@
 #pragma once
 
 #include <Eigen/Dense>
+
+#include <kdl/chain.hpp>
 #include <kdl/frames.hpp>
 #include <kdl/jntarrayvel.hpp>
 
@@ -85,11 +87,20 @@ KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
 /**
  * @brief Determine if a list of interfaces includes a certain type
  *
- * @param interface_type_list a list of posible interfaces
+ * @param interface_type_list a list of possible interfaces
  * @param interface_type the type to find in the list of interfaces
  */
 bool contains_interface_type(
     const std::vector<std::string>& interface_type_list,
     const std::string& interface_type);
+
+/**
+ * @brief Returns a list of joints found along the kinematic chain
+ *
+ * @param interface_type_list a list of posible interfaces
+ * @param interface_type the type to find in the list of interfaces
+ */
+std::vector<std::string> joints_along_chain(const KDL::Chain& chain,
+                                            bool include_fixed = false);
 
 }  // namespace ctrl

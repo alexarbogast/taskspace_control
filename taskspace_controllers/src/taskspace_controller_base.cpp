@@ -27,10 +27,10 @@ TaskspaceControllerBase::command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration cfg;
   cfg.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-  cfg.names.reserve(params_.joints.size() * params_.command_interfaces.size());
+  cfg.names.reserve(n_joints_ * params_.command_interfaces.size());
   for (const auto& type : params_.command_interfaces)
   {
-    for (const auto& joint : params_.joints)
+    for (const auto& joint : joint_names_)
     {
       cfg.names.push_back(joint + std::string("/").append(type));
     }
@@ -46,7 +46,7 @@ TaskspaceControllerBase::state_interface_configuration() const
 
   // use only position feedback for now
   const std::string interface = "position";
-  for (const auto& joint : params_.joints)
+  for (const auto& joint : joint_names_)
   {
     cfg.names.push_back(joint + std::string("/").append(interface));
   }
@@ -95,37 +95,6 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
   base_link_ = params_.base_link;
   eef_link_ = params_.eef_link;
 
-  if (params_.joints.empty())
-  {
-    RCLCPP_ERROR(logger, "'joints' parameter was empty");
-    return controller_interface::CallbackReturn::FAILURE;
-  }
-  n_joints_ = params_.joints.size();
-
-  // allocate dynamic memory
-  last_reference_.resize(n_joints_);
-  last_commanded_ = last_reference_;
-  joint_state_ = last_reference_;
-
-  if (params_.command_interfaces.empty())
-  {
-    RCLCPP_ERROR(logger, "'command_interfaces' parameter was empty");
-    return controller_interface::CallbackReturn::FAILURE;
-  }
-
-  joint_command_handles_.resize(allowed_interface_types_.size());
-  for (auto& itf : joint_command_handles_)
-  {
-    itf.reserve(params_.joints.size());
-  }
-
-  has_position_command_interface_ = ctrl::contains_interface_type(
-      params_.command_interfaces, hardware_interface::HW_IF_POSITION);
-  has_velocity_command_interface_ = ctrl::contains_interface_type(
-      params_.command_interfaces, hardware_interface::HW_IF_VELOCITY);
-
-  joint_state_handles_.resize(allowed_interface_types_.size());
-
   // parse URDF -> KDL
   urdf::Model urdf_model;
   KDL::Tree kdl_tree;
@@ -148,11 +117,24 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
     return controller_interface::CallbackReturn::ERROR;
   }
 
+  joint_names_ = ctrl::joints_along_chain(robot_chain_);
+  n_joints_ = joint_names_.size();
+
+  // allocate dynamic memory
+  last_reference_.resize(n_joints_);
+  last_commanded_ = last_reference_;
+  joint_state_ = last_reference_;
+
+  has_position_command_interface_ = ctrl::contains_interface_type(
+      params_.command_interfaces, hardware_interface::HW_IF_POSITION);
+  has_velocity_command_interface_ = ctrl::contains_interface_type(
+      params_.command_interfaces, hardware_interface::HW_IF_VELOCITY);
+
   upper_pos_limits_.resize(n_joints_);
   lower_pos_limits_.resize(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    const auto& jn = params_.joints[i];
+    const auto& jn = joint_names_[i];
     auto j = urdf_model.getJoint(jn);
     if (!j)
     {
@@ -203,23 +185,6 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_activate(
   // get parameters from the listener in case they were updated
   params_ = param_listener_->get_params();
 
-  for (const auto& interface : params_.command_interfaces)
-  {
-    auto it = std::find(allowed_interface_types_.begin(),
-                        allowed_interface_types_.end(), interface);
-    auto index = static_cast<size_t>(
-        std::distance(allowed_interface_types_.begin(), it));
-    if (!controller_interface::get_ordered_interfaces(
-            command_interfaces_, params_.joints, interface,
-            joint_command_handles_[index]))
-    {
-      RCLCPP_ERROR(logger, "Expected %u '%s' command interfaces, got %zu.",
-                   n_joints_, interface.c_str(),
-                   joint_command_handles_[index].size());
-      return CallbackReturn::ERROR;
-    }
-  }
-
   RCLCPP_INFO(logger, "Activated TaskspaceControllerBase");
   return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -234,10 +199,7 @@ controller_interface::return_type TaskspaceControllerBase::update(
 controller_interface::CallbackReturn TaskspaceControllerBase::on_deactivate(
     const rclcpp_lifecycle::State& /*previous_state*/)
 {
-  // release loaned interfaces if needed (framework often handles this)
-  joint_command_handles_.clear();
-  joint_state_handles_.clear();
-  this->release_interfaces();
+  stop_motion();
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -245,10 +207,6 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_shutdown(
     const rclcpp_lifecycle::State& previous_state)
 {
   stop_motion();
-
-  joint_command_handles_.clear();
-  joint_state_handles_.clear();
-  this->release_interfaces();
   return controller_interface::CallbackReturn::SUCCESS;
 }
 

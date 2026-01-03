@@ -62,4 +62,23 @@ bool contains_interface_type(
                    interface_type) != interface_type_list.end();
 }
 
+std::vector<std::string> joints_along_chain(const KDL::Chain& chain,
+                                            bool include_fixed)
+{
+  std::vector<std::string> joint_names;
+  joint_names.reserve(chain.getNrOfJoints());
+
+  for (unsigned int i = 0; i < chain.getNrOfSegments(); i++)
+  {
+    KDL::Joint joint = chain.getSegment(i).getJoint();
+
+    if (include_fixed || joint.getType() != KDL::Joint::None)
+    {
+      joint_names.push_back(joint.getName());
+    }
+  }
+
+  return joint_names;
+}
+
 }  // namespace ctrl

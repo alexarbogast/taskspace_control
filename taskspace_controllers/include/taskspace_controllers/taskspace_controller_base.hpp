@@ -75,16 +75,6 @@ protected:
   std::shared_ptr<taskspace_controller_base::ParamListener> param_listener_;
   taskspace_controller_base::Params params_;
 
-  // Hardware interface configuration
-  template <typename T>
-  using InterfaceReferences =
-      std::vector<std::vector<std::reference_wrapper<T>>>;
-
-  InterfaceReferences<hardware_interface::LoanedCommandInterface>
-      joint_command_handles_;
-  InterfaceReferences<hardware_interface::LoanedStateInterface>
-      joint_state_handles_;
-
   const std::vector<std::string> allowed_interface_types_ = {
     hardware_interface::HW_IF_POSITION,
     hardware_interface::HW_IF_VELOCITY,
@@ -94,6 +84,7 @@ protected:
   bool has_velocity_command_interface_ = false;
 
   // Controller parameters
+  std::vector<std::string> joint_names_;
   unsigned int n_joints_ = 0;
   std::string base_link_, eef_link_;
 
