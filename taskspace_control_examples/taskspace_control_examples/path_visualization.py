@@ -31,7 +31,8 @@ class PathVisualization:
         self.reset_marker.header.stamp = self.node.get_clock().now().to_msg()
         self.reset_marker.action = Marker.DELETEALL
 
-        topic = f"{ns}/{MARKER_ARRAY_TOPIC}" if ns else MARKER_ARRAY_TOPIC
+        topic = f"/{ns}/{MARKER_ARRAY_TOPIC}" if ns else MARKER_ARRAY_TOPIC
+        self.node.get_logger().info(f"Creating publisher on topic: '{topic}'")
         self.vis_pub = self.node.create_publisher(MarkerArray, topic, 1)
 
     def visualize_path(self, path: List[NDArray], frame: str = "world"):
