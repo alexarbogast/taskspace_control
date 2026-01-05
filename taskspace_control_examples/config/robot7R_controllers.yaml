@@ -16,15 +16,6 @@ controller_manager:
 # 7R robot controllers
 pose_controller:
   ros__parameters:
-    joints:
-      - joint1
-      - joint2
-      - joint3
-      - joint4
-      - joint5
-      - joint6
-      - joint7
-
     command_interfaces:
       - position
 
@@ -38,15 +29,6 @@ pose_controller:
 
 task_priority_controller:
   ros__parameters:
-    joints:
-      - joint1
-      - joint2
-      - joint3
-      - joint4
-      - joint5
-      - joint6
-      - joint7
-
     command_interfaces:
       - position
 
@@ -72,15 +54,6 @@ task_priority_controller:
 
 as_nullspace_controller:
   ros__parameters:
-    joints:
-      - joint1
-      - joint2
-      - joint3
-      - joint4
-      - joint5
-      - joint6
-      - joint7
-
     command_interfaces:
       - position
 
@@ -98,14 +71,6 @@ as_nullspace_controller:
 
 as_twist_decomposition_controller:
   ros__parameters:
-    joints:
-      - joint1
-      - joint2
-      - joint3
-      - joint4
-      - joint5
-      - joint6
-
     command_interfaces:
       - position
 

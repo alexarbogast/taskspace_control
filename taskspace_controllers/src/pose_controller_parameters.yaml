@@ -1,6 +1,7 @@
 pose_controller:
   setpoint_topic: {
     type: string,
+    default_value: "setpoint",
     description: "The name of the topic containing the setpoint",
     read_only: true,
   }
