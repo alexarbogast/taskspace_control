@@ -8,10 +8,8 @@
   <license>Apache2</license>
 
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>python3-numpy-quaternion</exec_depend>
   <exec_depend>xacro</exec_depend>
-  <exec_depend>rviz</exec_depend>
-  <exec_depend>joint_state_controller</exec_depend>
+  <exec_depend>rviz2</exec_depend>
   <exec_depend>ros2_control</exec_depend>
   <exec_depend>ros2_controllers</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
