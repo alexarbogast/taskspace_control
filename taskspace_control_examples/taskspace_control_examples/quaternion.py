@@ -86,3 +86,13 @@ def quaternion_exp(q):
 
     exp_w = np.exp(w)
     return np.concatenate([exp_w * np.cos(alpha), exp_w * scale * v], axis=-1)
+
+
+def quaternion_from_rotation_vec(vec):
+    """Compute the quaternion from a (θ * v)"""
+    vec = np.asarray(vec, dtype=float)
+
+    q = np.zeros(vec.shape[:-1] + (4,))
+    q[..., 1:] = 0.5 * vec
+
+    return quaternion_exp(q)

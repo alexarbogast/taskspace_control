@@ -16,13 +16,14 @@ from typing import List
 from copy import deepcopy
 from numpy.typing import NDArray
 import numpy as np
-import quaternion
 
 from rclpy.node import Node
 
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion
 from std_msgs.msg import ColorRGBA
+
+from taskspace_control_examples.quaternion import quaternion_from_rotation_vec
 
 MARKER_ARRAY_TOPIC = "visualization_marker_array"
 
@@ -75,10 +76,10 @@ class PathVisualization:
         if norm > 0:
             axis /= norm
         angle = np.arccos(np.dot(z_axis, u))
-        q = quaternion.from_rotation_vector(angle * axis)
+        q = quaternion_from_rotation_vec(angle * axis)
 
         marker = deepcopy(self.cylinder_marker)
-        marker.pose.orientation = Quaternion(x=q.x, y=q.y, z=q.z, w=q.w)
+        marker.pose.orientation = Quaternion(x=q[1], y=q[2], z=q[3], w=q[0])
         marker.pose.position = Point(x=center[0], y=center[1], z=center[2])
         marker.scale = Vector3(x=self.r, y=self.r, z=h)
         marker.color = self.color
