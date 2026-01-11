@@ -7,7 +7,8 @@ p(s(t)): [0, T] -> R^n
 """
 
 import numpy as np
-import quaternion
+
+from taskspace_control_examples.quaternion import *
 
 
 def array_function(func):
@@ -20,15 +21,23 @@ def array_function(func):
 
 
 def slerp_path(q_start, q_end):
-    @array_function
-    def f(s):
-        return np.slerp_vectorized(q_start, q_end, s)
+    q_start = quaternion_normalize(q_start)
+    q_end = quaternion_normalize(q_end)
+    q_rel = quaternion_multiply(quaternion_inv(q_start), q_end)
 
-    @array_function
+    # Constant body angular velocity
+    omega = quaternion_log(q_rel)  # θ * axis
+
+    # q(s) = q_start * exp(s * log(q_start⁻¹ q_end))
+    def f(s):
+        s = np.atleast_1d(s)[..., None]
+        q = quaternion_multiply(q_start, quaternion_exp(s * omega))
+        return np.squeeze(q)
+
+    # q_dot(s, s_dot) = s_dot * log(q_start⁻¹ q_end)
     def f_dot(s, s_dot):
-        return quaternion.as_rotation_vector(
-            s_dot * f(s) * np.log(q_start.inverse() * q_end)
-        )
+        s_dot = np.atleast_1d(s_dot)
+        return np.squeeze(s_dot[..., None] * omega)
 
     return f, f_dot
 
@@ -106,8 +115,8 @@ if __name__ == "__main__":
     s = np.linspace(0, 1, 100)
 
     # orientation path
-    q_start = np.quaternion(1.0, 0.0, 0.0, 0.0)
-    q_end = np.quaternion(1.0, 2.0, 3.0, 4.0)
+    q_start = np.array([1.0, 0.0, 0.0, 0.0])
+    q_end = np.array([1.0, 2.0, 3.0, 4.0])
 
     f, f_dot = slerp_path(q_start, q_end)
     fs = f(s)

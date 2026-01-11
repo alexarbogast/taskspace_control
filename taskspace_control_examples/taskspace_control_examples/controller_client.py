@@ -1,4 +1,3 @@
-import rclpy
 from rclpy.node import Node
 
 from taskspace_control_msgs.msg import PoseTwistSetpoint

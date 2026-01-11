@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import quaternion
 import rclpy
 import threading
 
 from taskspace_control_examples import ControlDemo
+from taskspace_control_examples.quaternion import *
 from taskspace_control_examples.trajectory import *
 
 
@@ -13,10 +13,10 @@ NODE_NAME = "pose_control_demo"
 
 robot_params = {
     "robot6R": {
-        "orient": np.quaternion(1.0, 0.0, 0.0, 0.0),
+        "orient": np.array([1.0, 0.0, 0.0, 0.0]),
     },
     "robot7R": {
-        "orient": np.quaternion(0.5, 0.5, 0.5, -0.5),
+        "orient": np.array([0.5, 0.5, 0.5, -0.5]),
     },
 }
 
@@ -32,8 +32,36 @@ class PoseControlDemo(ControlDemo):
         self.static_orient = robot_params[robot_type]["orient"]
 
     def run(self):
+        self.line()
         self.circle()
-        # self.hypotrochoid()
+        self.hypotrochoid()
+
+    def line(self):
+        tf = 5
+        tt = np.linspace(0, tf, int(self.hz * tf))
+
+        p_start = np.array([0.5, -0.5, 0.1])
+        p_end = np.array([0.5, 0.5, 0.1])
+
+        f, f_dot = linear_traj(p_start, p_end, tf)
+        ft, f_dott = f(tt), f_dot(tt)
+
+        q_start = self.static_orient
+        q_offset = np.array([[0.707107, 0, 0, 0.707107]])
+        q_end = quaternion_multiply(q_start, q_offset)
+
+        q, _ = slerp_traj(q_start, q_end, tf, scaling=Order.FIFTH)
+        qt = q(tt)
+
+        self.path_viz.visualize_path(
+            [f(t) for t in np.linspace(0, tf, 500)],
+            "base_link",
+        )
+
+        self.movel(ft[0], self.static_orient, 2)
+
+        self.execute_path(ft, f_dott, qt)
+        self.path_viz.reset()
 
     def circle(self):
         tf = 5
@@ -43,14 +71,20 @@ class PoseControlDemo(ControlDemo):
         offset = np.array([0.5, 0.0, 0.1])
         ft, f_dott = f(tt) + offset, f_dot(tt)
 
+        q_start = self.static_orient
+        q_offset = np.array([[0.707107, 0, 0, 0.707107]])
+        q_end = quaternion_multiply(q_start, q_offset)
+
+        q, _ = slerp_traj(q_start, q_end, tf, scaling=Order.FIFTH)
+        qt = q(tt)
+
         self.path_viz.visualize_path(
             [f(t) + offset for t in np.linspace(0, tf, 500)],
             "base_link",
         )
 
         self.movel(ft[0], self.static_orient, 2)
-
-        self.execute_path(ft, f_dott, self.static_orient)
+        self.execute_path(ft, f_dott, qt)
         self.path_viz.reset()
 
     def hypotrochoid(self):
@@ -62,13 +96,20 @@ class PoseControlDemo(ControlDemo):
         offset = np.array([0.5, 0.0, 0.1])
         ft, f_dott = scale * f(tt) + offset, scale * f_dot(tt)
 
+        q_start = self.static_orient
+        q_offset = np.array([[0.707107, 0, 0, 0.707107]])
+        q_end = quaternion_multiply(q_start, q_offset)
+
+        q, _ = slerp_traj(q_start, q_end, tf, scaling=Order.FIFTH)
+        qt = q(tt)
+
         self.path_viz.visualize_path(
             [scale * f(t) + offset for t in np.linspace(0, tf, 500)],
             "base_link",
         )
 
         self.movel(ft[0], self.static_orient, 1)
-        self.execute_path(ft, f_dott, self.static_orient)
+        self.execute_path(ft, f_dott, qt)
         self.path_viz.reset()
 
 

@@ -1,5 +1,4 @@
 import numpy as np
-import quaternion
 from rclpy.node import Node
 
 from std_msgs.msg import ColorRGBA
@@ -12,12 +11,12 @@ from .path_visualization import PathVisualization
 from .trajectory import *
 
 
-def quaternion_msg_to_np(q: Quaternion) -> quaternion.quaternion:
-    return np.quaternion(q.w, q.x, q.y, q.z)
+def quaternion_msg_to_np(q: Quaternion) -> np.ndarray:
+    return np.array([q.w, q.x, q.y, q.z])
 
 
-def quaternion_np_to_msg(q: quaternion.quaternion) -> Quaternion:
-    return Quaternion(x=q.x, y=q.y, z=q.z, w=q.w)
+def quaternion_np_to_msg(q: np.ndarray) -> Quaternion:
+    return Quaternion(x=q[1], y=q[2], z=q[3], w=q[0])
 
 
 class ControlDemo(Node):
@@ -34,7 +33,7 @@ class ControlDemo(Node):
             self, 0.007, ColorRGBA(r=0.96, g=0.38, b=0.21, a=1.0)
         )
 
-        self.static_orient = np.quaternion(1, 0, 0, 0)
+        self.static_orient = np.array([1, 0, 0, 0])
         self.hz = setpoint_hz
 
     def movel(self, p, q, tf):
@@ -58,8 +57,8 @@ class ControlDemo(Node):
         rate = self.create_rate(self.hz)
         setpoint = PoseTwistSetpoint()
 
-        if isinstance(orient, quaternion.quaternion):
-            orient = [orient] * len(f)
+        if orient.ndim == 1:
+            orient = np.repeat(orient[None, :], len(f), axis=0)
 
         for ft, f_dott, q in zip(f, f_dot, orient):
             setpoint.pose.position = Point(x=ft[0], y=ft[1], z=ft[2])
