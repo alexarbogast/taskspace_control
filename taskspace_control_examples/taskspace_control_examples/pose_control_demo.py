@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 
+# Copyright 2024 Alex Arbogast
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import rclpy
 import threading
@@ -14,9 +28,11 @@ NODE_NAME = "pose_control_demo"
 robot_params = {
     "robot6R": {
         "orient": np.array([1.0, 0.0, 0.0, 0.0]),
+        "q_diff": np.array([0.707107, 0, 0, 0.707107]),
     },
     "robot7R": {
         "orient": np.array([0.5, 0.5, 0.5, -0.5]),
+        "q_diff": np.array([0.707107, -0.707107, 0, 0]),
     },
 }
 
@@ -30,6 +46,7 @@ class PoseControlDemo(ControlDemo):
         robot_type = self.get_parameter("robot_type").value
 
         self.static_orient = robot_params[robot_type]["orient"]
+        self.q_diff = robot_params[robot_type]["q_diff"]
 
     def run(self):
         self.line()
@@ -47,8 +64,7 @@ class PoseControlDemo(ControlDemo):
         ft, f_dott = f(tt), f_dot(tt)
 
         q_start = self.static_orient
-        q_offset = np.array([[0.707107, 0, 0, 0.707107]])
-        q_end = quaternion_multiply(q_start, q_offset)
+        q_end = quaternion_multiply(self.static_orient, self.q_diff)
 
         q, _ = slerp_traj(q_start, q_end, tf, scaling=Order.FIFTH)
         qt = q(tt)
@@ -72,8 +88,7 @@ class PoseControlDemo(ControlDemo):
         ft, f_dott = f(tt) + offset, f_dot(tt)
 
         q_start = self.static_orient
-        q_offset = np.array([[0.707107, 0, 0, 0.707107]])
-        q_end = quaternion_multiply(q_start, q_offset)
+        q_end = quaternion_multiply(self.static_orient, self.q_diff)
 
         q, _ = slerp_traj(q_start, q_end, tf, scaling=Order.FIFTH)
         qt = q(tt)
@@ -97,8 +112,7 @@ class PoseControlDemo(ControlDemo):
         ft, f_dott = scale * f(tt) + offset, scale * f_dot(tt)
 
         q_start = self.static_orient
-        q_offset = np.array([[0.707107, 0, 0, 0.707107]])
-        q_end = quaternion_multiply(q_start, q_offset)
+        q_end = quaternion_multiply(self.static_orient, self.q_diff)
 
         q, _ = slerp_traj(q_start, q_end, tf, scaling=Order.FIFTH)
         qt = q(tt)
