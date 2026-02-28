@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <axially_symmetric_controllers/nullspace_controller.hpp>
-#include <axially_symmetric_controllers/utility.hpp>
+#include "axially_symmetric_controllers/nullspace_controller.hpp"
+#include "axially_symmetric_controllers/utility.hpp"
 
 namespace axially_symmetric_controllers
 {
@@ -36,8 +36,13 @@ controller_interface::return_type NullspaceController::update(
   robot_fk_solver_->JntToCart(joint_state_.q, pose_kdl);
 
   // --- Error computation ---
-  ctrl::Vector3D aim_current(pose_kdl.M.UnitZ().data);
-  ctrl::Vector3D aim_desired(setpoint->pose.M.UnitZ().data);
+  Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> R_fk(
+      pose_kdl.M.data);
+  Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> R_setpoint(
+      setpoint->pose.M.data);
+
+  ctrl::Vector3D aim_current(R_fk * tool_frame_axis_);
+  ctrl::Vector3D aim_desired(R_setpoint * setpoint_frame_axis_);
 
   ctrl::Vector3D rot_axis = axisBetween(aim_current, aim_desired);
   double rot_angle = angleBetween(aim_current, aim_desired);
@@ -71,6 +76,6 @@ controller_interface::return_type NullspaceController::update(
 
 }  // namespace axially_symmetric_controllers
 
-#include <pluginlib/class_list_macros.hpp>
+#include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(axially_symmetric_controllers::NullspaceController,
                        controller_interface::ControllerInterface)

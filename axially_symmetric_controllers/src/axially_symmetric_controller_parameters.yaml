@@ -1,0 +1,17 @@
+axially_symmetric_controller:
+  eef_frame_axis: {
+    type: double_array,
+    default_value: [0.0, 0.0, 1.0],
+    description: "The aiming axis expressed in the end effector frame",
+    validation: {
+      fixed_size<>: [3]
+    }
+  }
+  setpoint_frame_axis: {
+    type: double_array,
+    default_value: [0.0, 0.0, 1.0],
+    description: "The aiming axis expressed in the setpoint frame",
+    validation: {
+      fixed_size<>: [3]
+    }
+  }

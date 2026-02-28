@@ -19,6 +19,11 @@ find_package(taskspace_control_msgs REQUIRED)
 find_package(taskspace_controllers REQUIRED)
 find_package(task_priority_controllers REQUIRED)
 
+generate_parameter_library(
+  axially_symmetric_controller_parameters
+  src/axially_symmetric_controller_parameters.yaml
+)
+
 include_directories(
   include
   ${EIGEN3_INCLUDE_DIRS}
@@ -26,10 +31,13 @@ include_directories(
 
 add_library(${PROJECT_NAME} SHARED
   src/utility.cpp
+  src/axially_symmetric_controller_base.cpp
   src/nullspace_controller.cpp
   src/twist_decomposition_controller.cpp
 )
-
+target_link_libraries(${PROJECT_NAME}
+  axially_symmetric_controller_parameters
+)
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   urdf
@@ -49,7 +57,9 @@ pluginlib_export_plugin_description_file(
 
 # Install targets and headers
 install(
-  TARGETS ${PROJECT_NAME}
+  TARGETS
+    ${PROJECT_NAME}
+    axially_symmetric_controller_parameters
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
