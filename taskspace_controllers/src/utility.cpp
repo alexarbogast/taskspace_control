@@ -42,6 +42,11 @@ void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e)
   e.translation() = Eigen::Map<const Eigen::Vector3d>(k.p.data);
 }
 
+void transformKDLToEigen(const KDL::Rotation& k, Eigen::Matrix<double, 3, 3>& e)
+{
+  e = Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(k.data);
+}
+
 KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
                                      const ctrl::VectorND& qdot)
 {

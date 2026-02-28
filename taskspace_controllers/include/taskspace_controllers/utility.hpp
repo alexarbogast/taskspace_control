@@ -70,10 +70,19 @@ MatrixND dampedPinv(const MatrixND& matrix, double alpha);
 /**
  * @brief Transforms a KDL frame to an Eigen::Isometry3d
  *
- * @param e the KDL frame to transform
- * @param alpha the eigen element to populate with the data from e
+ * @param k the KDL frame to transform
+ * @param e the eigen element to populate with the data from k
  */
 void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e);
+
+/**
+ * @brief Transforms a KDL Rotation to an Eigen::Matrix
+ *
+ * @param k the KDL rotation to transform
+ * @param e the eigen element to populate with the data from k
+ */
+void transformKDLToEigen(const KDL::Rotation& k,
+                         Eigen::Matrix<double, 3, 3>& e);
 
 /**
  * @brief Transforms a robot state (position + velocity) to a KDL::JntArrayVel

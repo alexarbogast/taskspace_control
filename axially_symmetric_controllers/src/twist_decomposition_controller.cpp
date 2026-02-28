@@ -36,10 +36,9 @@ controller_interface::return_type TwistDecompositionController::update(
   robot_fk_solver_->JntToCart(joint_state_.q, pose_kdl);
 
   // --- Error computation ---
-  Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> R_fk(
-      pose_kdl.M.data);
-  Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> R_setpoint(
-      setpoint->pose.M.data);
+  ctrl::Matrix3D R_fk, R_setpoint;
+  ctrl::transformKDLToEigen(pose_kdl.M, R_fk);
+  ctrl::transformKDLToEigen(setpoint->pose.M, R_setpoint);
 
   ctrl::Vector3D aim_current(R_fk * tool_frame_axis_);
   ctrl::Vector3D aim_desired(R_setpoint * setpoint_frame_axis_);
