@@ -16,10 +16,10 @@
 
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
-#include <taskspace_controllers/utility.hpp>
-
 #include <kdl/chain.hpp>
 #include <kdl/jntarrayvel.hpp>
+
+#include "taskspace_controllers/utility.hpp"
 
 namespace task_priority_controllers
 {

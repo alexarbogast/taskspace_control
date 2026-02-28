@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/task_priority_controller.hpp>
-#include <controller_interface/controller_interface_base.hpp>
+#include "task_priority_controllers/task_priority_controller.hpp"
 
 namespace task_priority_controllers
 {

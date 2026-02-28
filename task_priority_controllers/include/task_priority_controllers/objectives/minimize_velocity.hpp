@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <task_priority_controllers/objectives/objective_plugin.hpp>
+#include "task_priority_controllers/objectives/objective_plugin.hpp"
 
 namespace task_priority_controllers
 {

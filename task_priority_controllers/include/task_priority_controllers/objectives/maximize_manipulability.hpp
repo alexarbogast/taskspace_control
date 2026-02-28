@@ -14,13 +14,13 @@
 
 #pragma once
 
-#include <task_priority_controllers/objectives/objective_plugin.hpp>
-#include <memory>
+#include "task_priority_controllers/objectives/objective_plugin.hpp"
+#include "task_priority_controllers/maximize_manipulability_parameters.hpp"
 
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/chainjnttojacdotsolver.hpp>
 
-#include <task_priority_controllers/maximize_manipulability_parameters.hpp>
+#include <memory>
 
 namespace task_priority_controllers
 {

@@ -14,9 +14,8 @@
 
 #pragma once
 
-#include <task_priority_controllers/objectives/objective_plugin.hpp>
-
-#include <task_priority_controllers/match_configuration_parameters.hpp>
+#include "task_priority_controllers/objectives/objective_plugin.hpp"
+#include "task_priority_controllers/match_configuration_parameters.hpp"
 
 namespace task_priority_controllers
 {

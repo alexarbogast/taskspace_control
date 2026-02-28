@@ -14,25 +14,28 @@
 
 #include "axially_symmetric_controllers/utility.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 namespace axially_symmetric_controllers
 {
 
-double angleBetween(const Eigen::Vector3d& v1, const Eigen::Vector3d& v2)
+double angleBetween(const ctrl::Vector3D& v1, const ctrl::Vector3D& v2)
 {
-  return acos(
+  return std::acos(
       std::min(1.0, std::max(-1.0, v1.dot(v2) / (v1.norm() * v2.norm()))));
 }
 
-Eigen::Vector3d axisBetween(const Eigen::Vector3d& v1,
-                            const Eigen::Vector3d& v2, double tol)
+ctrl::Vector3D axisBetween(const ctrl::Vector3D& v1, const ctrl::Vector3D& v2,
+                           double tol)
 {
-  Eigen::Vector3d axis = v1.cross(v2);
+  ctrl::Vector3D axis = v1.cross(v2);
   double norm = axis.norm();
   if (norm > tol)
   {
     return axis / norm;
   }
-  return Eigen::Vector3d::Zero();
+  return ctrl::Vector3D::Zero();
 }
 
 }  // namespace axially_symmetric_controllers

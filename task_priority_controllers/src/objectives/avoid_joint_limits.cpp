@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/objectives/avoid_joint_limits.hpp>
-
-#include <task_priority_controllers/avoid_joint_limits_parameters.hpp>
+#include "task_priority_controllers/objectives/avoid_joint_limits.hpp"
+#include "task_priority_controllers/avoid_joint_limits_parameters.hpp"
 
 namespace task_priority_controllers
 {
@@ -55,6 +54,6 @@ AvoidJointLimits::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.hpp>
+#include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::AvoidJointLimits,
                        task_priority_controllers::RRObjective)

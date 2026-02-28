@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <taskspace_controllers/utility.hpp>
+#include "taskspace_controllers/utility.hpp"
 
 namespace ctrl
 {
@@ -36,7 +36,7 @@ MatrixND dampedPinv(const MatrixND& matrix, double alpha)
 
 void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e)
 {
-  e = Eigen::Isometry3d::Identity();
+  e = Pose::Identity();
   e.linear() =
       Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(k.M.data);
   e.translation() = Eigen::Map<const Eigen::Vector3d>(k.p.data);

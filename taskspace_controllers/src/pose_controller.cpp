@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <taskspace_controllers/pose_controller.hpp>
-#include <taskspace_controllers/utility.hpp>
-
-#include <memory>
-#include <pluginlib/class_list_macros.hpp>
+#include "taskspace_controllers/pose_controller.hpp"
+#include "taskspace_controllers/utility.hpp"
 
 namespace taskspace_controllers
 {
@@ -161,5 +158,6 @@ void PoseController::setpointCallback(
 
 }  // namespace taskspace_controllers
 
+#include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(taskspace_controllers::PoseController,
                        controller_interface::ControllerInterface)

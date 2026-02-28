@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/objectives/maximize_manipulability.hpp>
+#include "task_priority_controllers/objectives/maximize_manipulability.hpp"
 #include "taskspace_controllers/utility.hpp"
 
 namespace task_priority_controllers
@@ -20,10 +20,10 @@ namespace task_priority_controllers
 
 static double MANIP_THRESHOLD = 1e-10;
 
-bool MaximizeManipulability::init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
-                                  const KDL::Chain& chain,
-                                  const KDL::JntArray& upper_pos_limits,
-                                  const KDL::JntArray& lower_pos_limits)
+bool MaximizeManipulability::init(
+    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+    const KDL::Chain& chain, const KDL::JntArray& upper_pos_limits,
+    const KDL::JntArray& lower_pos_limits)
 {
   if (!RRObjective::init(node, chain, upper_pos_limits, lower_pos_limits))
   {
@@ -88,6 +88,6 @@ MaximizeManipulability::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.hpp>
+#include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::MaximizeManipulability,
                        task_priority_controllers::RRObjective)

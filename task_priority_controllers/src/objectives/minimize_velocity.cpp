@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/objectives/minimize_velocity.hpp>
+#include "task_priority_controllers/objectives/minimize_velocity.hpp"
 
 namespace task_priority_controllers
 {
@@ -25,6 +25,6 @@ MinimizeVelocity::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.hpp>
+#include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::MinimizeVelocity,
                        task_priority_controllers::RRObjective)

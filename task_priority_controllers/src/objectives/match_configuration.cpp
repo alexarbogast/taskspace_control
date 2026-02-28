@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <task_priority_controllers/objectives/match_configuration.hpp>
+#include "task_priority_controllers/objectives/match_configuration.hpp"
 
 namespace task_priority_controllers
 {
@@ -68,6 +68,6 @@ MatchConfiguration::getJointControlCmd(const KDL::JntArrayVel& joint_state)
 
 }  // namespace task_priority_controllers
 
-#include <pluginlib/class_list_macros.hpp>
+#include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(task_priority_controllers::MatchConfiguration,
                        task_priority_controllers::RRObjective)
