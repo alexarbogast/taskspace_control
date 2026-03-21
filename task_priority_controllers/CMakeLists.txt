@@ -3,23 +3,19 @@ project(task_priority_controllers)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
-endif(NOT CMAKE_BUILD_TYPE)
+endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(urdf REQUIRED)
-find_package(kdl_parser REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(controller_interface REQUIRED)
-find_package(joint_limits REQUIRED)
 find_package(generate_parameter_library REQUIRED)
-find_package(realtime_tools REQUIRED)
-find_package(taskspace_control_msgs REQUIRED)
 find_package(taskspace_controllers REQUIRED)
 
-## objective parameters
+set(THIS_PACKAGE_DEPS rclcpp taskspace_controllers)
+
+######################################################
+# Parameter libraries
 generate_parameter_library(
   maximize_manipulability_parameters
   src/objectives/maximize_manipulability_parameters.yaml
@@ -35,18 +31,15 @@ generate_parameter_library(
   src/objectives/match_configuration_parameters.yaml
 )
 
-## controller paramaters
 generate_parameter_library(
   task_priority_controller_parameters
   src/task_priority_controller_parameters.yaml
 )
 
-include_directories(
-  include
-  ${EIGEN3_INCLUDE_DIRS}
-)
+######################################################
+# Build executables and libraries
 
-## redundancy resolution objectives
+## Redundancy resolution objectives
 add_library(rr_objectives SHARED
   src/objectives/objective_plugin.cpp
   src/objectives/minimize_velocity.cpp
@@ -54,55 +47,44 @@ add_library(rr_objectives SHARED
   src/objectives/avoid_joint_limits.cpp
   src/objectives/match_configuration.cpp
 )
+target_include_directories(rr_objectives PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIRS}>
+  $<INSTALL_INTERFACE:include>
+)
 target_link_libraries(rr_objectives
   maximize_manipulability_parameters
   avoid_joint_limits_parameters
   match_configuration_parameters
 )
-ament_target_dependencies(rr_objectives
-  rclcpp
-  urdf
-  kdl_parser
-  pluginlib
-  controller_interface
-  joint_limits
-  realtime_tools
-  taskspace_control_msgs
-  taskspace_controllers
-)
-
+ament_target_dependencies(rr_objectives ${THIS_PACKAGE_DEPS})
 pluginlib_export_plugin_description_file(
   task_priority_controllers
   objective_plugins.xml
 )
 
-## task_priority_controllers
+## Task priority controller
 add_library(${PROJECT_NAME} SHARED
   src/task_priority_controller.cpp
   src/pose_controller.cpp
   src/objectives/objective_plugin.cpp
 )
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIRS}>
+  $<INSTALL_INTERFACE:include>
+)
 target_link_libraries(${PROJECT_NAME}
   task_priority_controller_parameters
 )
-ament_target_dependencies(${PROJECT_NAME}
-  rclcpp
-  urdf
-  kdl_parser
-  pluginlib
-  controller_interface
-  joint_limits
-  realtime_tools
-  taskspace_control_msgs
-  taskspace_controllers
-)
-
+ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_DEPS})
 pluginlib_export_plugin_description_file(
   controller_interface
   task_priority_controller_plugins.xml
 )
 
-# Installation
+######################################################
+# Install executables and libraries
 install(
   TARGETS
     ${PROJECT_NAME}
@@ -131,17 +113,6 @@ install(
 # Export interfaces for downstream packages
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME} rr_objectives)
-ament_export_dependencies(
-  rclcpp
-  urdf
-  kdl_parser
-  pluginlib
-  controller_interface
-  joint_limits
-  generate_parameter_library
-  realtime_tools
-  taskspace_control_msgs
-  taskspace_controllers
-)
+ament_export_dependencies(${THIS_PACKAGE_DEPS})
 
 ament_package()
