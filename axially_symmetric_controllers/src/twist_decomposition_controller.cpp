@@ -77,11 +77,10 @@ controller_interface::return_type TwistDecompositionController::update(
 
   ctrl::VectorND joint_cmd = J_pinv * mod_cart_cmd;
 
-  ctrl::VectorND new_position =
-      joint_state_.q.data + (joint_cmd * period.seconds());
-
-  auto cmd = ctrl::transformEigenToKDL(new_position, joint_cmd);
+  KDL::JntArray q_cmd = ctrl::transformEigenToKDL(joint_cmd);
+  auto cmd = create_command(joint_state_.q, q_cmd, period.seconds());
   write_command(cmd);
+
   return controller_interface::return_type::OK;
 }
 
