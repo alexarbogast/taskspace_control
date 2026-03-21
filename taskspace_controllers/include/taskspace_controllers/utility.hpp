@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <limits>
 #include <Eigen/Dense>
 
 #include <kdl/chain.hpp>
@@ -35,6 +36,13 @@ typedef Eigen::MatrixXd MatrixND;
 typedef Eigen::Quaterniond Quaternion;
 typedef Eigen::AngleAxisd AngleAxis;
 typedef Eigen::Isometry3d Pose;
+
+struct JointLimits
+{
+  double min_position = std::numeric_limits<double>::quiet_NaN();
+  double max_position = std::numeric_limits<double>::quiet_NaN();
+  double max_velocity = std::numeric_limits<double>::quiet_NaN();
+};
 
 /**
  * @brief Find the left pseudoinverse of a matrix

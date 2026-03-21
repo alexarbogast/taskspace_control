@@ -130,8 +130,7 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
   has_velocity_command_interface_ = ctrl::contains_interface_type(
       params_.command_interfaces, hardware_interface::HW_IF_VELOCITY);
 
-  upper_pos_limits_.resize(n_joints_);
-  lower_pos_limits_.resize(n_joints_);
+  joint_limits_.resize(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
     const auto& jn = joint_names_[i];
@@ -141,22 +140,28 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
       RCLCPP_ERROR(logger, "Joint '%s' not found in URDF.", jn.c_str());
       return controller_interface::CallbackReturn::ERROR;
     }
+
+    ctrl::JointLimits limits;
     if (j->type == urdf::Joint::CONTINUOUS)
     {
-      upper_pos_limits_(i) = std::numeric_limits<double>::quiet_NaN();
-      lower_pos_limits_(i) = std::numeric_limits<double>::quiet_NaN();
+      // No position limits, but velocity may exist
+      if (j->limits)
+      {
+        limits.max_velocity = j->limits->velocity;
+      }
     }
     else if (j->limits)
     {
-      upper_pos_limits_(i) = j->limits->upper;
-      lower_pos_limits_(i) = j->limits->lower;
+      limits.min_position = j->limits->lower;
+      limits.max_position = j->limits->upper;
+      limits.max_velocity = j->limits->velocity;
     }
     else
     {
       RCLCPP_WARN(logger, "Joint %s has no limits; using NaN.", jn.c_str());
-      upper_pos_limits_(i) = std::numeric_limits<double>::quiet_NaN();
-      lower_pos_limits_(i) = std::numeric_limits<double>::quiet_NaN();
     }
+
+    joint_limits_[i] = limits;
   }
 
   robot_fk_solver_ =
@@ -233,20 +238,38 @@ void TaskspaceControllerBase::write_command(const KDL::JntArrayVel& cmd)
   size_t vel_ind = (has_position_command_interface_) ?
                        pos_ind + has_velocity_command_interface_ :
                        pos_ind;
+
   for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
   {
+    const auto& limits = joint_limits_[joint_ind];
+
+    double q_cmd = cmd.q(joint_ind);
+    double qdot_cmd = cmd.qdot(joint_ind);
+
+    // Clamp output command
+    if (!std::isnan(limits.min_position) && !std::isnan(limits.max_position))
+    {
+      q_cmd = std::clamp(q_cmd, limits.min_position, limits.max_position);
+    }
+    if (!std::isnan(limits.max_velocity))
+    {
+      qdot_cmd =
+          std::clamp(qdot_cmd, -limits.max_velocity, limits.max_velocity);
+    }
+
+    // Write output command to hardware
     if (has_position_command_interface_)
     {
-      command_interfaces_[pos_ind * n_joints_ + joint_ind].set_value(
-          cmd.q(joint_ind));
+      command_interfaces_[pos_ind * n_joints_ + joint_ind].set_value(q_cmd);
     }
     if (has_velocity_command_interface_)
     {
-      command_interfaces_[vel_ind * n_joints_ + joint_ind].set_value(
-          cmd.qdot(joint_ind));
+      command_interfaces_[vel_ind * n_joints_ + joint_ind].set_value(qdot_cmd);
     }
+
+    last_commanded_.q(joint_ind) = q_cmd;
+    last_commanded_.qdot(joint_ind) = qdot_cmd;
   }
-  last_commanded_ = cmd;
 }
 
 void TaskspaceControllerBase::stop_motion()

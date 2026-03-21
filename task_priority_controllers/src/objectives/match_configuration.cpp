@@ -21,10 +21,9 @@ const static std::string CONFIG_PARAM = "match_config";
 
 bool MatchConfiguration::init(
     std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
-    const KDL::Chain& chain, const KDL::JntArray& upper_pos_limits,
-    const KDL::JntArray& lower_pos_limits)
+    const KDL::Chain& chain, const std::vector<ctrl::JointLimits>& joint_limits)
 {
-  if (!RRObjective::init(node, chain, upper_pos_limits, lower_pos_limits))
+  if (!RRObjective::init(node, chain, joint_limits))
   {
     return false;
   }

@@ -89,8 +89,7 @@ protected:
 
   // Kinematics
   KDL::Chain robot_chain_;
-  KDL::JntArray upper_pos_limits_;
-  KDL::JntArray lower_pos_limits_;
+  std::vector<ctrl::JointLimits> joint_limits_;
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> robot_fk_solver_;
 
   // State tracking
