@@ -13,6 +13,7 @@ find_package(Eigen3 REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(controller_interface REQUIRED)
+find_package(joint_limits REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(taskspace_control_msgs REQUIRED)
@@ -64,6 +65,7 @@ ament_target_dependencies(rr_objectives
   kdl_parser
   pluginlib
   controller_interface
+  joint_limits
   realtime_tools
   taskspace_control_msgs
   taskspace_controllers
@@ -89,6 +91,7 @@ ament_target_dependencies(${PROJECT_NAME}
   kdl_parser
   pluginlib
   controller_interface
+  joint_limits
   realtime_tools
   taskspace_control_msgs
   taskspace_controllers
@@ -134,6 +137,7 @@ ament_export_dependencies(
   kdl_parser
   pluginlib
   controller_interface
+  joint_limits
   generate_parameter_library
   realtime_tools
   taskspace_control_msgs

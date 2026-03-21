@@ -59,6 +59,16 @@ KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
   return out;
 }
 
+KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q)
+{
+  const size_t n = q.size();
+  KDL::JntArray out(n);
+
+  Eigen::Map<Eigen::VectorXd>(out.data.data(), n) = q;
+
+  return out;
+}
+
 bool contains_interface_type(
     const std::vector<std::string>& interface_type_list,
     const std::string& interface_type)

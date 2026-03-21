@@ -22,10 +22,10 @@ static double MANIP_THRESHOLD = 1e-10;
 
 bool MaximizeManipulability::init(
     std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
-    const KDL::Chain& chain, const KDL::JntArray& upper_pos_limits,
-    const KDL::JntArray& lower_pos_limits)
+    const KDL::Chain& chain,
+    const std::vector<joint_limits::JointLimits>& joint_limits)
 {
-  if (!RRObjective::init(node, chain, upper_pos_limits, lower_pos_limits))
+  if (!RRObjective::init(node, chain, joint_limits))
   {
     return false;
   }

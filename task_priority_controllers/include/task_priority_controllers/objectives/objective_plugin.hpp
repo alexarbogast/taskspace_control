@@ -19,6 +19,8 @@
 #include <kdl/chain.hpp>
 #include <kdl/jntarrayvel.hpp>
 
+#include "joint_limits/joint_limits.hpp"
+
 #include "taskspace_controllers/utility.hpp"
 
 namespace task_priority_controllers
@@ -30,8 +32,7 @@ public:
 
   virtual bool init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
                     const KDL::Chain& chain,
-                    const KDL::JntArray& upper_pos_limits,
-                    const KDL::JntArray& lower_pos_limits);
+                    const std::vector<joint_limits::JointLimits>& joint_limits);
 
   virtual ctrl::VectorND
   getJointControlCmd(const KDL::JntArrayVel& joint_state) = 0;
@@ -40,8 +41,7 @@ protected:
   unsigned int n_joints_;
   KDL::Chain robot_chain_;
 
-  KDL::JntArray upper_pos_limits_;
-  KDL::JntArray lower_pos_limits_;
+  std::vector<joint_limits::JointLimits> joint_limits_;
 };
 
 }  // namespace task_priority_controllers

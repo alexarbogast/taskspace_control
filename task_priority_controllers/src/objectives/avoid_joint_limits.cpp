@@ -20,15 +20,26 @@ namespace task_priority_controllers
 
 bool AvoidJointLimits::init(
     std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
-    const KDL::Chain& chain, const KDL::JntArray& upper_pos_limits,
-    const KDL::JntArray& lower_pos_limits)
+    const KDL::Chain& chain,
+    const std::vector<joint_limits::JointLimits>& joint_limits)
 {
-  if (!RRObjective::init(node, chain, upper_pos_limits, lower_pos_limits))
+  if (!RRObjective::init(node, chain, joint_limits))
   {
     return false;
   }
 
-  limits_avg.data = (upper_pos_limits.data + lower_pos_limits.data) / 2;
+  for (size_t i = 0; i < n_joints_; ++i)
+  {
+    const auto& limits = joint_limits[i];
+    if (std::isnan(limits.min_position) || std::isnan(limits.max_position))
+    {
+      RCLCPP_ERROR(node->get_logger(),
+                   "Joint at index %lu has invalid position limits (NaN).", i);
+      return false;
+    }
+
+    limits_avg(i) = 0.5 * (limits.min_position + limits.max_position);
+  }
 
   try
   {

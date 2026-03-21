@@ -77,8 +77,7 @@ controller_interface::CallbackReturn TaskPriorityController::on_configure(
     return CallbackReturn::FAILURE;
   }
 
-  if (!rr_objective_->init(node, robot_chain_, upper_pos_limits_,
-                           lower_pos_limits_))
+  if (!rr_objective_->init(node, robot_chain_, joint_limits_))
   {
     RCLCPP_ERROR(node->get_logger(),
                  "Failed to initialize redundancy resolution objective.");

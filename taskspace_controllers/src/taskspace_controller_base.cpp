@@ -14,10 +14,13 @@
 
 #include "taskspace_controllers/taskspace_controller_base.hpp"
 
+#include <algorithm>
+
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 
 #include "urdf/model.h"
+#include "joint_limits/joint_limits_urdf.hpp"
 
 namespace taskspace_controllers
 {
@@ -130,8 +133,8 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
   has_velocity_command_interface_ = ctrl::contains_interface_type(
       params_.command_interfaces, hardware_interface::HW_IF_VELOCITY);
 
-  upper_pos_limits_.resize(n_joints_);
-  lower_pos_limits_.resize(n_joints_);
+  // Initialize the joint limits from the urdf
+  joint_limits_.resize(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
     const auto& jn = joint_names_[i];
@@ -141,22 +144,8 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
       RCLCPP_ERROR(logger, "Joint '%s' not found in URDF.", jn.c_str());
       return controller_interface::CallbackReturn::ERROR;
     }
-    if (j->type == urdf::Joint::CONTINUOUS)
-    {
-      upper_pos_limits_(i) = std::numeric_limits<double>::quiet_NaN();
-      lower_pos_limits_(i) = std::numeric_limits<double>::quiet_NaN();
-    }
-    else if (j->limits)
-    {
-      upper_pos_limits_(i) = j->limits->upper;
-      lower_pos_limits_(i) = j->limits->lower;
-    }
-    else
-    {
-      RCLCPP_WARN(logger, "Joint %s has no limits; using NaN.", jn.c_str());
-      upper_pos_limits_(i) = std::numeric_limits<double>::quiet_NaN();
-      lower_pos_limits_(i) = std::numeric_limits<double>::quiet_NaN();
-    }
+
+    joint_limits::getJointLimits(j, joint_limits_[i]);
   }
 
   robot_fk_solver_ =
@@ -264,6 +253,44 @@ void TaskspaceControllerBase::stop_motion()
       command_interfaces_[vel_ind * n_joints_ + joint_ind].set_value(0.0);
     }
   }
+}
+
+KDL::JntArrayVel TaskspaceControllerBase::create_command(
+    const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd, double dt)
+{
+  KDL::JntArrayVel out(n_joints_);
+  for (size_t i = 0; i < n_joints_; ++i)
+  {
+    const auto& limits = joint_limits_[i];
+
+    double q = q_current(i);
+    double qdot = q_dot_cmd(i);
+
+    // Velocity saturation
+    if (!std::isnan(limits.max_velocity))
+    {
+      qdot = std::clamp(qdot, -limits.max_velocity, limits.max_velocity);
+    }
+
+    // Numerical Integration
+    double q_next = q + qdot * dt;
+
+    // Position saturation
+    if (!std::isnan(limits.min_position) && !std::isnan(limits.max_position))
+    {
+      double q_clamped =
+          std::clamp(q_next, limits.min_position, limits.max_position);
+
+      // Back-compute velocity to stay consistent
+      qdot = (q_clamped - q) / dt;
+      q_next = q_clamped;
+    }
+
+    out.q(i) = q_next;
+    out.qdot(i) = qdot;
+  }
+
+  return out;
 }
 
 bool TaskspaceControllerBase::queryPoseServiceCb(

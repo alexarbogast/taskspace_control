@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <limits>
 #include <Eigen/Dense>
 
 #include <kdl/chain.hpp>
@@ -92,6 +93,13 @@ void transformKDLToEigen(const KDL::Rotation& k,
  */
 KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
                                      const ctrl::VectorND& qdot);
+
+/**
+ * @brief Transforms an Eigen::Vector to a KDL::JntArray
+ *
+ * @param q the joint position
+ */
+KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q);
 
 /**
  * @brief Determine if a list of interfaces includes a certain type

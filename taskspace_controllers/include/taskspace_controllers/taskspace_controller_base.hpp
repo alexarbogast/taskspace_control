@@ -25,6 +25,7 @@
 #include "trajectory_msgs/msg/joint_trajectory_point.hpp"
 #include "controller_interface/controller_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
+#include "joint_limits/joint_limits.hpp"
 
 #include "ros2_version_config.h"
 
@@ -66,6 +67,10 @@ protected:
   void stop_motion();
   void write_command(const KDL::JntArrayVel& cmd);
 
+  // Utility functions
+  KDL::JntArrayVel create_command(const KDL::JntArray& q_current,
+                                  const KDL::JntArray& q_dot_cmd, double dt);
+
   // Callbacks
   using QueryPose = taskspace_control_msgs::srv::QueryPose;
   virtual bool queryPoseServiceCb(const std::shared_ptr<QueryPose::Request> req,
@@ -89,8 +94,7 @@ protected:
 
   // Kinematics
   KDL::Chain robot_chain_;
-  KDL::JntArray upper_pos_limits_;
-  KDL::JntArray lower_pos_limits_;
+  std::vector<joint_limits::JointLimits> joint_limits_;
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> robot_fk_solver_;
 
   // State tracking
