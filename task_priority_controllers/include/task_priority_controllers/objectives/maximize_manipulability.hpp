@@ -33,7 +33,7 @@ public:
   virtual bool
   init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
        const KDL::Chain& chain,
-       const std::vector<ctrl::JointLimits>& joint_limits) override;
+       const std::vector<joint_limits::JointLimits>& joint_limits) override;
 
   virtual ctrl::VectorND
   getJointControlCmd(const KDL::JntArrayVel& joint_state) override;

@@ -37,13 +37,6 @@ typedef Eigen::Quaterniond Quaternion;
 typedef Eigen::AngleAxisd AngleAxis;
 typedef Eigen::Isometry3d Pose;
 
-struct JointLimits
-{
-  double min_position = std::numeric_limits<double>::quiet_NaN();
-  double max_position = std::numeric_limits<double>::quiet_NaN();
-  double max_velocity = std::numeric_limits<double>::quiet_NaN();
-};
-
 /**
  * @brief Find the left pseudoinverse of a matrix
  *
@@ -100,6 +93,13 @@ void transformKDLToEigen(const KDL::Rotation& k,
  */
 KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
                                      const ctrl::VectorND& qdot);
+
+/**
+ * @brief Transforms an Eigen::Vector to a KDL::JntArray
+ *
+ * @param q the joint position
+ */
+KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q);
 
 /**
  * @brief Determine if a list of interfaces includes a certain type

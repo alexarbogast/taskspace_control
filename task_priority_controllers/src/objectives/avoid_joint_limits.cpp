@@ -20,7 +20,8 @@ namespace task_priority_controllers
 
 bool AvoidJointLimits::init(
     std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
-    const KDL::Chain& chain, const std::vector<ctrl::JointLimits>& joint_limits)
+    const KDL::Chain& chain,
+    const std::vector<joint_limits::JointLimits>& joint_limits)
 {
   if (!RRObjective::init(node, chain, joint_limits))
   {

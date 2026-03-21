@@ -17,9 +17,10 @@
 namespace task_priority_controllers
 {
 
-bool RRObjective::init(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
-                       const KDL::Chain& chain,
-                       const std::vector<ctrl::JointLimits>& joint_limits)
+bool RRObjective::init(
+    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+    const KDL::Chain& chain,
+    const std::vector<joint_limits::JointLimits>& joint_limits)
 {
   robot_chain_ = chain;
   n_joints_ = robot_chain_.getNrOfJoints();
