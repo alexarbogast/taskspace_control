@@ -4,22 +4,17 @@
 [![ros - humble](https://img.shields.io/badge/ROS2-Humble-blue)](https://docs.ros.org/en/humble/index.html)
 [![ros - jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://docs.ros.org/en/jazzy/index.html)
 
-The [**task space**](https://modernrobotics.northwestern.edu/nu-gm-book-resource/2-5-task-space-and-workspace/)
-of a robot refers to the space in which the robot's end-effector or tool
-operates.
-The `taskspace_control` packe provides a set of packages for task-space control
-of robotic manipulators using the
+The `taskspace_control` package provides
+[**task-space**](https://modernrobotics.northwestern.edu/nu-gm-book-resource/2-5-task-space-and-workspace/)
+controllers for robotic manipulators using the
 [ros2_control](https://github.com/ros-controls/ros2_control) framework.
 
 ## Package Overview
 
-Each controller provided by the `taskspace_control` package subscribes to the
-same type of setpoint. This setpoint is defined by a pose $p \in SE(3)$ and a
-twist $\xi \in \mathbb{R}^6$. The setpoint is provided to the controller via a
+Each controller in the `taskspace_control` package accepts a setpoint defined by
+a pose $p \in SE(3)$ and a twist $\xi \in \mathbb{R}^6$, delivered as a
 [`PoseTwistSetpoint.msg`](./taskspace_control_msgs/msg/PoseTwistSetpoint.msg).
-
-The `taskspace_control_examples` package provides an example implementation of a
-setpoint publisher for the controllers.
+The `taskspace_control_examples` package provides an example setpoint publisher.
 
 ## Running the Demos
 
@@ -28,6 +23,7 @@ Launch the demo robot system with the desired robot and controller
 ```sh
  ros2 launch taskspace_control_examples robot_bringup.launch.py robot_type:=robot6R controller:=pose_controller
 ```
+
 ```
 # robot_type (default "robot6R"): One of 'robot6R', 'robot7R
 ```
@@ -37,6 +33,7 @@ In another terminal, launch the control demo with the same controller
 ```sh
 ros2 launch taskspace_control_examples pose_control_demo.launch.py robot_type:=robot6R controller:=pose_controller
 ```
+
 ```
 # controller (default "pose_controller"):
 #    One of 'pose_controller,
