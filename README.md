@@ -21,7 +21,7 @@ The `taskspace_control_examples` package provides an example setpoint publisher.
 Launch the demo robot system with the desired robot and controller
 
 ```sh
- ros2 launch taskspace_control_examples robot_bringup.launch.py robot_type:=robot6R controller:=pose_controller
+ros2 launch taskspace_control_examples robot_bringup.launch.py robot_type:=robot6R controller:=pose_controller
 ```
 
 ```

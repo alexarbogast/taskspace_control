@@ -256,7 +256,8 @@ void TaskspaceControllerBase::stop_motion()
 }
 
 KDL::JntArrayVel TaskspaceControllerBase::create_command(
-    const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd, double dt)
+    const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
+    double dt) const
 {
   KDL::JntArrayVel out(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
@@ -291,6 +292,30 @@ KDL::JntArrayVel TaskspaceControllerBase::create_command(
   }
 
   return out;
+}
+
+double
+TaskspaceControllerBase::compute_manipulability(const KDL::Jacobian& jac) const
+{
+  const auto& J = jac.data;
+  const Eigen::MatrixXd J_JT = J * J.transpose();
+  return std::sqrt(std::max(0.0, J_JT.determinant()));
+}
+
+bool TaskspaceControllerBase::check_manipulability(const KDL::Jacobian& jac)
+{
+  const double w = compute_manipulability(jac);
+  if (w < params_.manipulability_threshold)
+  {
+    RCLCPP_WARN_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(),
+                         500 /*ms*/,
+                         "Manipulability (%.6f) below threshold (%.6f) — "
+                         "zeroing output.",
+                         w, params_.manipulability_threshold);
+    stop_motion();
+    return false;
+  }
+  return true;
 }
 
 bool TaskspaceControllerBase::queryPoseServiceCb(
