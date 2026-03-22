@@ -19,3 +19,8 @@ taskspace_controller_base:
     description: "Name of the 'tool' reference frame",
     read_only: true,
   }
+  manipulability_threshold: {
+    type: double,
+    default_value: 0.01,
+    description: "Minimum manipulability index w = sqrt(det(J*J^T)) below which output is zeroed."
+  }

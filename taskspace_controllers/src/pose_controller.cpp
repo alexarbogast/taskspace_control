@@ -112,6 +112,12 @@ controller_interface::return_type PoseController::update(
   KDL::Jacobian jac(n_joints_);
   robot_jacobian_solver_->JntToJac(joint_state_.q, jac);
 
+  // Safety: bail out near singularities
+  if (!check_manipulability(jac))
+  {
+    return controller_interface::return_type::OK;
+  }
+
   KDL::Frame pose_kdl;
   robot_fk_solver_->JntToCart(joint_state_.q, pose_kdl);
 
