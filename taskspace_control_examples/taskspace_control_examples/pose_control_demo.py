@@ -28,7 +28,7 @@ NODE_NAME = "pose_control_demo"
 robot_params = {
     "robot6R": {
         "orient": np.array([1.0, 0.0, 0.0, 0.0]),
-        "q_diff": np.array([0.707107, 0, 0, 0.707107]),
+        "q_diff": np.array([0.9238795, 0, 0, 0.3826834]),
     },
     "robot7R": {
         "orient": np.array([0.5, 0.5, 0.5, -0.5]),
@@ -84,7 +84,7 @@ class PoseControlDemo(ControlDemo):
         tt = np.linspace(0, tf, int(self.hz * tf))
         f, f_dot = circular_traj(1 / 6, tf)
 
-        offset = np.array([0.5, 0.0, 0.1])
+        offset = np.array([0.5, 0.0, 0.0])
         ft, f_dott = f(tt) + offset, f_dot(tt)
 
         q_start = self.static_orient

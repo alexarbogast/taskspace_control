@@ -21,6 +21,6 @@ taskspace_controller_base:
   }
   manipulability_threshold: {
     type: double,
-    default_value: 0.01,
+    default_value: 0.001,
     description: "Minimum manipulability index w = sqrt(det(J*J^T)) below which output is zeroed."
   }
