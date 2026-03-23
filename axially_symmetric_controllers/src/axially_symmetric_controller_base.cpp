@@ -66,6 +66,50 @@ AxiallySymmetricControllerBase::on_configure(
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
+controller_interface::CallbackReturn
+AxiallySymmetricControllerBase::on_activate(
+    const rclcpp_lifecycle::State& previous_state)
+{
+  RCLCPP_INFO(get_node()->get_logger(),
+              "Activating AxiallySymmetricController...");
+
+  // Activate base class
+  if (TaskspaceControllerBase::on_activate(previous_state) !=
+      controller_interface::CallbackReturn::SUCCESS)
+  {
+    return controller_interface::CallbackReturn::ERROR;
+  }
+
+  // Initialize joint state from hardware
+  read_state_from_hardware(joint_state_);
+
+  Setpoint fk;
+  robot_fk_solver_->JntToCart(joint_state_.q, fk.pose);
+
+  // Initialize a pose with the setpoint_frame_axis_ aiming
+  // in the direction of the tool_frame_axis_
+  ctrl::Matrix3D R_fk;
+  ctrl::transformKDLToEigen(fk.pose.M, R_fk);
+  ctrl::Vector3D a_target = R_fk * tool_frame_axis_;
+  a_target.normalize();
+
+  ctrl::Vector3D a_set = setpoint_frame_axis_;
+  a_set.normalize();
+
+  ctrl::Quaternion q_align = ctrl::Quaternion::FromTwoVectors(a_set, a_target);
+
+  Eigen::AngleAxisd twist(0.0, a_target);
+  ctrl::Quaternion q_final = twist * q_align;
+  ctrl::Matrix3D R = q_final.toRotationMatrix();
+
+  Setpoint init_setpoint;
+  init_setpoint.pose.M = ctrl::transformEigenToKDL(R);
+  init_setpoint.pose.p = fk.pose.p;  // keep same position
+
+  setpoint_buffer_.writeFromNonRT(std::move(init_setpoint));
+  return CallbackReturn::SUCCESS;
+}
+
 }  // namespace axially_symmetric_controllers
 
 #include "pluginlib/class_list_macros.hpp"

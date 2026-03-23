@@ -114,6 +114,13 @@ KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
 KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q);
 
 /**
+ * @brief Transforms an Eigen::Matrix to a KDL::Rotation
+ *
+ * @param R the rotation matrix
+ */
+KDL::Rotation transformEigenToKDL(const ctrl::Matrix3D& R);
+
+/**
  * @brief Generate a joint position/velocity command with limit enforcement
  *
  * Applies velocity saturation and integrates joint velocities over the given
