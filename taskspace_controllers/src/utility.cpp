@@ -76,6 +76,17 @@ KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q)
   return out;
 }
 
+KDL::Rotation transformEigenToKDL(const Eigen::Matrix3d& R)
+{
+  // clang-format off
+  return KDL::Rotation(
+      R(0,0), R(0,1), R(0,2),
+      R(1,0), R(1,1), R(1,2),
+      R(2,0), R(2,1), R(2,2)
+  );
+  // clang-format on
+}
+
 KDL::JntArrayVel create_command(
     const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
     const std::vector<joint_limits::JointLimits>& joint_limits, double dt)

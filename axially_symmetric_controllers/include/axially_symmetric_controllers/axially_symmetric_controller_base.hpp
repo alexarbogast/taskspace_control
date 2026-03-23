@@ -31,6 +31,9 @@ public:
   virtual controller_interface::CallbackReturn
   on_configure(const rclcpp_lifecycle::State& previous_state) override;
 
+  virtual controller_interface::CallbackReturn
+  on_activate(const rclcpp_lifecycle::State& previous_state) override;
+
 protected:
   std::shared_ptr<axially_symmetric_controller::ParamListener>
       as_param_listener_;
