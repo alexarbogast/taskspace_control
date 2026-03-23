@@ -34,6 +34,13 @@ MatrixND dampedPinv(const MatrixND& matrix, double alpha)
          (matrix * matrix.transpose() + alpha * alpha * identity).inverse();
 }
 
+double compute_manipulability(const KDL::Jacobian& jac)
+{
+  const auto& J = jac.data;
+  const MatrixND J_JT = J * J.transpose();
+  return std::sqrt(std::max(0.0, J_JT.determinant()));
+}
+
 void transformKDLToEigen(const KDL::Frame& k, Eigen::Isometry3d& e)
 {
   e = Pose::Identity();

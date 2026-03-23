@@ -14,8 +14,6 @@
 
 #pragma once
 
-#include "taskspace_controllers/utility.hpp"
-
 #include <kdl/chain.hpp>
 #include <kdl/jntarray.hpp>
 #include <kdl/jntarrayvel.hpp>
@@ -68,7 +66,6 @@ protected:
   void write_command(const KDL::JntArrayVel& cmd);
 
   // Utility functions
-  double compute_manipulability(const KDL::Jacobian& jac) const;
   bool check_manipulability(const KDL::Jacobian& jac);
 
   // Callbacks

@@ -13,8 +13,7 @@
 // limitations under the License.
 
 #include "taskspace_controllers/taskspace_controller_base.hpp"
-
-#include <algorithm>
+#include "taskspace_controllers/utility.hpp"
 
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
@@ -255,17 +254,9 @@ void TaskspaceControllerBase::stop_motion()
   }
 }
 
-double
-TaskspaceControllerBase::compute_manipulability(const KDL::Jacobian& jac) const
-{
-  const auto& J = jac.data;
-  const Eigen::MatrixXd J_JT = J * J.transpose();
-  return std::sqrt(std::max(0.0, J_JT.determinant()));
-}
-
 bool TaskspaceControllerBase::check_manipulability(const KDL::Jacobian& jac)
 {
-  const double w = compute_manipulability(jac);
+  const double w = ctrl::compute_manipulability(jac);
   if (w < params_.manipulability_threshold)
   {
     RCLCPP_WARN_THROTTLE(get_node()->get_logger(), *get_node()->get_clock(),

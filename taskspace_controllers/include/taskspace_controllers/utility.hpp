@@ -70,6 +70,17 @@ MatrixND rightPinv(const MatrixND& matrix);
 MatrixND dampedPinv(const MatrixND& matrix, double alpha);
 
 /**
+ * @brief Compute the manipulability measure from a Jacobian
+ *
+ * Calculates the Yoshikawa manipulability index as the square root of the
+ * determinant of J * Jᵀ.
+ *
+ * @param jac the Jacobian matrix
+ * @returns double manipulability measure
+ */
+double compute_manipulability(const KDL::Jacobian& jac);
+
+/**
  * @brief Transforms a KDL frame to an Eigen::Isometry3d
  *
  * @param k the KDL frame to transform
