@@ -255,45 +255,6 @@ void TaskspaceControllerBase::stop_motion()
   }
 }
 
-KDL::JntArrayVel TaskspaceControllerBase::create_command(
-    const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
-    double dt) const
-{
-  KDL::JntArrayVel out(n_joints_);
-  for (size_t i = 0; i < n_joints_; ++i)
-  {
-    const auto& limits = joint_limits_[i];
-
-    double q = q_current(i);
-    double qdot = q_dot_cmd(i);
-
-    // Velocity saturation
-    if (!std::isnan(limits.max_velocity))
-    {
-      qdot = std::clamp(qdot, -limits.max_velocity, limits.max_velocity);
-    }
-
-    // Numerical Integration
-    double q_next = q + qdot * dt;
-
-    // Position saturation
-    if (!std::isnan(limits.min_position) && !std::isnan(limits.max_position))
-    {
-      double q_clamped =
-          std::clamp(q_next, limits.min_position, limits.max_position);
-
-      // Back-compute velocity to stay consistent
-      qdot = (q_clamped - q) / dt;
-      q_next = q_clamped;
-    }
-
-    out.q(i) = q_next;
-    out.qdot(i) = qdot;
-  }
-
-  return out;
-}
-
 double
 TaskspaceControllerBase::compute_manipulability(const KDL::Jacobian& jac) const
 {

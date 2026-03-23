@@ -14,12 +14,13 @@
 
 #pragma once
 
-#include <limits>
 #include <Eigen/Dense>
 
 #include <kdl/chain.hpp>
 #include <kdl/frames.hpp>
 #include <kdl/jntarrayvel.hpp>
+
+#include "joint_limits/joint_limits.hpp"
 
 namespace ctrl
 {
@@ -100,6 +101,23 @@ KDL::JntArrayVel transformEigenToKDL(const ctrl::VectorND& q,
  * @param q the joint position
  */
 KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q);
+
+/**
+ * @brief Generate a joint position/velocity command with limit enforcement
+ *
+ * Applies velocity saturation and integrates joint velocities over the given
+ * timestep to compute the next joint positions. Position limits are enforced,
+ * and velocities are adjusted to remain consistent with any clamping.
+ *
+ * @param q_current current joint positions
+ * @param q_dot_cmd commanded joint velocities
+ * @param joint_limits per-joint position and velocity limits
+ * @param dt integration timestep [s]
+ * @return KDL::JntArrayVel resulting joint positions and velocities
+ */
+KDL::JntArrayVel create_command(
+    const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
+    const std::vector<joint_limits::JointLimits>& joint_limits, double dt);
 
 /**
  * @brief Determine if a list of interfaces includes a certain type

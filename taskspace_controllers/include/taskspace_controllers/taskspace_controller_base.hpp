@@ -68,10 +68,6 @@ protected:
   void write_command(const KDL::JntArrayVel& cmd);
 
   // Utility functions
-  KDL::JntArrayVel create_command(const KDL::JntArray& q_current,
-                                  const KDL::JntArray& q_dot_cmd,
-                                  double dt) const;
-
   double compute_manipulability(const KDL::Jacobian& jac) const;
   bool check_manipulability(const KDL::Jacobian& jac);
 

@@ -69,6 +69,46 @@ KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q)
   return out;
 }
 
+KDL::JntArrayVel create_command(
+    const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
+    const std::vector<joint_limits::JointLimits>& joint_limits, double dt)
+{
+  const size_t n_joints = q_current.rows();
+  KDL::JntArrayVel out(n_joints);
+  for (size_t i = 0; i < n_joints; ++i)
+  {
+    const auto& limits = joint_limits[i];
+
+    double q = q_current(i);
+    double qdot = q_dot_cmd(i);
+
+    // Velocity saturation
+    if (!std::isnan(limits.max_velocity))
+    {
+      qdot = std::clamp(qdot, -limits.max_velocity, limits.max_velocity);
+    }
+
+    // Numerical Integration
+    double q_next = q + qdot * dt;
+
+    // Position saturation
+    if (!std::isnan(limits.min_position) && !std::isnan(limits.max_position))
+    {
+      double q_clamped =
+          std::clamp(q_next, limits.min_position, limits.max_position);
+
+      // Back-compute velocity to stay consistent
+      qdot = (q_clamped - q) / dt;
+      q_next = q_clamped;
+    }
+
+    out.q(i) = q_next;
+    out.qdot(i) = qdot;
+  }
+
+  return out;
+}
+
 bool contains_interface_type(
     const std::vector<std::string>& interface_type_list,
     const std::string& interface_type)
