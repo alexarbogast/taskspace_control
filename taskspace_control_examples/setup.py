@@ -26,6 +26,7 @@ setup(
     maintainer_email="arbogastaw@gmail.com",
     description="ros2_control examples using taskspace controllers",
     license="Apache License, Version 2.0",
+    tests_require=['pytest'],
     entry_points={
         "console_scripts": [
             "pose_control_demo = \
