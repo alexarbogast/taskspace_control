@@ -86,11 +86,14 @@ a list of provided plugins.
 
 ### Axially-symmetric Controllers
 
-The axially-symmetric controllers inherit from the Task-priority controllers.
-These controllers treat the setpoint as a 5-DOF task. The manipulator will track
-a position and align the z-axis of the end-effector with the z-axis of the
-setpoint pose. The rotation about the z-axis of the tool is left as a redundant
-axis where the rotation is decided by the redundancy resolution objective.
+Axially-symmetric controllers inherit from the Task-priority controllers. These
+controllers treat the setpoint as a 5-DOF task with three position constraints
+(x, y, z) and two orientation constraints. The manipulator will track a provided
+position and align the `eef_frame_axis` with the `setpoint_frame_axis` (see:
+[`axially_symmetric_controller_parameters.yaml`](https://github.com/alexarbogast/taskspace_control/blob/ros2/axially_symmetric_controllers/src/axially_symmetric_controller_parameters.yaml)).
+The rotation about the z-axis of the tool is left as a redundant axis, with the
+orientation ultimately determined by a redundancy resolution objective (see
+Task-priority Controllers above).
 
 - `axially_symmetric_controllers/NullspaceController`
 
