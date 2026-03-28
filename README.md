@@ -1,6 +1,7 @@
 # Task-space Controllers
 
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+[![ROS2 CI](https://github.com/alexarbogast/taskspace_control/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/alexarbogast/taskspace_control/actions/workflows/build-and-test.yml)
 [![ros - humble](https://img.shields.io/badge/ROS2-Humble-blue)](https://docs.ros.org/en/humble/index.html)
 [![ros - jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://docs.ros.org/en/jazzy/index.html)
 

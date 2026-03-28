@@ -2,7 +2,7 @@ name: ROS2 CI
 
 on:
   push:
-    branches: [feature/ros2-build-ci]
+    branches: [ros2]
   pull_request:
     branches: [ros2]
 
