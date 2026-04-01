@@ -19,6 +19,8 @@
 #include <kdl/jntarrayvel.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 
+#include "realtime_tools/realtime_publisher.hpp"
+#include "taskspace_control_msgs/msg/joint_state_diagnostic.hpp"
 #include "taskspace_control_msgs/srv/query_pose.hpp"
 #include "trajectory_msgs/msg/joint_trajectory_point.hpp"
 #include "controller_interface/controller_interface.hpp"
@@ -81,8 +83,17 @@ protected:
     hardware_interface::HW_IF_VELOCITY,
   };
 
+  // Diagnostic publishing helper
+  void publish_state_diagnostic(const rclcpp::Time& time,
+                                const KDL::JntArrayVel& state,
+                                const KDL::JntArrayVel& command);
+
   bool has_position_command_interface_ = false;
   bool has_velocity_command_interface_ = false;
+  bool has_position_state_interface_ = false;
+  bool has_velocity_state_interface_ = false;
+  size_t position_state_interface_index_ = 0;
+  size_t velocity_state_interface_index_ = 0;
 
   // Controller parameters
   std::vector<std::string> joint_names_;
@@ -101,6 +112,15 @@ protected:
 
   // Services
   rclcpp::Service<QueryPose>::SharedPtr query_pose_service_;
+
+  // Diagnostic
+  std::unique_ptr<realtime_tools::RealtimePublisher<
+      taskspace_control_msgs::msg::JointStateDiagnostic>>
+      rt_state_pub_;
+  std::shared_ptr<
+      rclcpp::Publisher<taskspace_control_msgs::msg::JointStateDiagnostic>>
+      state_pub_;
+  taskspace_control_msgs::msg::JointStateDiagnostic diagnostic_msg_;
 };
 
 }  // namespace taskspace_controllers
