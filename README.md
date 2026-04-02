@@ -1,4 +1,4 @@
-# Task-space Controllers
+# Task-space Control
 
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![ROS2 CI](https://github.com/alexarbogast/taskspace_control/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/alexarbogast/taskspace_control/actions/workflows/build-and-test.yml)
@@ -105,3 +105,16 @@ Task-priority Controllers above).
   This controller uses
   [twist-decomposition](https://www.researchgate.net/publication/228961289_The_joint-limits_and_singularity_avoidance_in_robotic_welding)
   for redundancy resolution.
+
+## Diagnostic Publisher
+
+The pose controller can be built to publish a diagnostic topic that includes:
+
+- State command, actual state, and state error
+- Desired pose (controller setpoint), actual pose, and pose error
+
+The diagnositc publisher is disabled by default. Enable the diagnostic publisher by building with the CMake argument:
+
+```sh
+colcon build --symlink-install --cmake-args "-DTASKSPACE_CONTROLLERS_ENABLE_DIAGNOSTIC_PUBLISHER=ON"
+```
