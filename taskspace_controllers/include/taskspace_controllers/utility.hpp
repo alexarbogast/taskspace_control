@@ -20,6 +20,7 @@
 #include <kdl/frames.hpp>
 #include <kdl/jntarrayvel.hpp>
 
+#include "geometry_msgs/msg/pose.hpp"
 #include "joint_limits/joint_limits.hpp"
 
 namespace ctrl
@@ -119,6 +120,42 @@ KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q);
  * @param R the rotation matrix
  */
 KDL::Rotation transformEigenToKDL(const ctrl::Matrix3D& R);
+
+/**
+ * @brief Transforms an Eigen pose to a ROS Pose message
+ *
+ * @param pose the Eigen pose to transform
+ */
+geometry_msgs::msg::Pose transformEigenToROS(const ctrl::Pose& p);
+
+/**
+ * @brief Computes the translation and orientation error between two poses
+ *
+ * The error is computed as target - current for translation, and as the
+ * axis-angle vector of target.rotation() * current.rotation().inverse() for
+ * orientation.
+ *
+ * @param target the target pose
+ * @param current the current pose
+ * @param translation_error output translation error
+ * @param orientation_error output orientation error
+ */
+void computePoseError(const ctrl::Pose& target, const ctrl::Pose& current,
+                      ctrl::Vector3D& translation_error,
+                      ctrl::Vector3D& orientation_error);
+
+/**
+ * @brief Computes joint-space error between a command and measured state
+ *
+ * The error is computed as command - state for both position and velocity.
+ *
+ * @param command the commanded joint state
+ * @param state the measured joint state
+ * @param state_error output joint-space error
+ */
+void computeStateError(const KDL::JntArrayVel& command,
+                       const KDL::JntArrayVel& state,
+                       KDL::JntArrayVel& state_error);
 
 /**
  * @brief Generate a joint position/velocity command with limit enforcement

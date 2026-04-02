@@ -20,7 +20,8 @@
 #include <kdl/chainfksolverpos_recursive.hpp>
 
 #include "realtime_tools/realtime_publisher.hpp"
-#include "taskspace_control_msgs/msg/joint_state_diagnostic.hpp"
+#include "taskspace_controllers/utility.hpp"
+#include "taskspace_control_msgs/msg/taskspace_control_diagnostic.hpp"
 #include "taskspace_control_msgs/srv/query_pose.hpp"
 #include "trajectory_msgs/msg/joint_trajectory_point.hpp"
 #include "controller_interface/controller_interface.hpp"
@@ -85,8 +86,13 @@ protected:
 
   // Diagnostic publishing helper
   void publish_state_diagnostic(const rclcpp::Time& time,
-                                const KDL::JntArrayVel& state,
-                                const KDL::JntArrayVel& command);
+                                const KDL::JntArrayVel& joint_cmd,
+                                const KDL::JntArrayVel& joint_state,
+                                const KDL::JntArrayVel& state_error,
+                                const ctrl::Pose& sp_pose,
+                                const ctrl::Pose& pose,
+                                const ctrl::Vector3D& trans_error,
+                                const ctrl::Vector3D& orient_error);
 
   bool has_position_command_interface_ = false;
   bool has_velocity_command_interface_ = false;
@@ -115,12 +121,12 @@ protected:
 
   // Diagnostic
   std::unique_ptr<realtime_tools::RealtimePublisher<
-      taskspace_control_msgs::msg::JointStateDiagnostic>>
+      taskspace_control_msgs::msg::TaskspaceControlDiagnostic>>
       rt_state_pub_;
   std::shared_ptr<
-      rclcpp::Publisher<taskspace_control_msgs::msg::JointStateDiagnostic>>
+      rclcpp::Publisher<taskspace_control_msgs::msg::TaskspaceControlDiagnostic>>
       state_pub_;
-  taskspace_control_msgs::msg::JointStateDiagnostic diagnostic_msg_;
+  taskspace_control_msgs::msg::TaskspaceControlDiagnostic diagnostic_msg_;
 };
 
 }  // namespace taskspace_controllers

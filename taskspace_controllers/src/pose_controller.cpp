@@ -98,8 +98,8 @@ PoseController::on_activate(const rclcpp_lifecycle::State& previous_state)
   return CallbackReturn::SUCCESS;
 }
 
-controller_interface::return_type PoseController::update(
-    const rclcpp::Time& time, const rclcpp::Duration& period)
+controller_interface::return_type
+PoseController::update(const rclcpp::Time& time, const rclcpp::Duration& period)
 {
   if (pose_param_listener_->is_old(pose_params_))
   {
@@ -128,9 +128,9 @@ controller_interface::return_type PoseController::update(
   ctrl::transformKDLToEigen(setpoint->pose, sp_pose);
 
   // --- Error computation ---
-  ctrl::AngleAxis aa(sp_pose.rotation() * pose.rotation().inverse());
-  ctrl::Vector3D orient_error = aa.axis() * aa.angle();
-  ctrl::Vector3D trans_error(sp_pose.translation() - pose.translation());
+  ctrl::Vector3D orient_error;
+  ctrl::Vector3D trans_error;
+  ctrl::computePoseError(sp_pose, pose, trans_error, orient_error);
 
   ctrl::Vector6D cart_cmd;
   cart_cmd << pose_params_.k_position * trans_error,
@@ -145,7 +145,14 @@ controller_interface::return_type PoseController::update(
                                   period.seconds());
   write_command(cmd);
 
-  TaskspaceControllerBase::publish_state_diagnostic(time, joint_state_, cmd);
+#ifdef TASKSPACE_CONTROLLERS_ENABLE_DIAGNOSTIC_PUBLISHER
+  KDL::JntArrayVel state_error(n_joints_);
+  ctrl::computeStateError(cmd, joint_state_, state_error);
+
+  TaskspaceControllerBase::publish_state_diagnostic(time, cmd, joint_state_,
+                                                    state_error, sp_pose, pose,
+                                                    trans_error, orient_error);
+#endif
 
   return controller_interface::return_type::OK;
 }

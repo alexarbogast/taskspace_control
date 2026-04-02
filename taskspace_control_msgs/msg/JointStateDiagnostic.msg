@@ -1,2 +1,0 @@
-sensor_msgs/JointState state
-sensor_msgs/JointState command
