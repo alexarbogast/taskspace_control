@@ -189,7 +189,8 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
   state_pub_ = get_node()
                    ->create_publisher<
                        taskspace_control_msgs::msg::TaskspaceControlDiagnostic>(
-                       get_node()->get_name() + std::string("/joint_state_"
+                       get_node()->get_name() + std::string("/taskspace_"
+                                                            "control_"
                                                             "diagnostic"),
                        10);
   rt_state_pub_ = std::make_unique<realtime_tools::RealtimePublisher<
