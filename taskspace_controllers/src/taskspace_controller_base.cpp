@@ -407,15 +407,10 @@ void TaskspaceControllerBase::publish_diagnostics(
         joint_cmd.qdot.data - joint_fb.qdot.data;
   }
 
-  // TODO: write utility function for converting 3D vector to ROS
-  msg.position_error.x = trans_error.x();
-  msg.position_error.y = trans_error.y();
-  msg.position_error.z = trans_error.z();
+  msg.position_error = ctrl::transformEigenToROS(trans_error);
   msg.position_error_norm = trans_error.norm();
 
-  msg.orientation_error.x = orient_error.x();
-  msg.orientation_error.y = orient_error.y();
-  msg.orientation_error.z = orient_error.z();
+  msg.orientation_error = ctrl::transformEigenToROS(orient_error);
   msg.orientation_error_norm = orient_error.norm();
 
   rt_diagnostic_pub_->unlockAndPublish();

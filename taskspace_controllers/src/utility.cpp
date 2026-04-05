@@ -103,6 +103,16 @@ geometry_msgs::msg::Pose transformEigenToROS(const ctrl::Pose& p)
   return msg;
 }
 
+geometry_msgs::msg::Vector3 transformEigenToROS(const ctrl::Vector3D& v)
+{
+  geometry_msgs::msg::Vector3 msg;
+
+  msg.x = v.x();
+  msg.y = v.y();
+  msg.z = v.z();
+  return msg;
+}
+
 void computePoseError(const ctrl::Pose& target, const ctrl::Pose& current,
                       ctrl::Vector3D& translation_error,
                       ctrl::Vector3D& orientation_error)

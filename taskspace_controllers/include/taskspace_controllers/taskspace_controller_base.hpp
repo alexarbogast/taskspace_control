@@ -120,7 +120,6 @@ protected:
   std::shared_ptr<rclcpp::Publisher<DiagnosticMsg>> diagnostic_pub_;
   std::unique_ptr<realtime_tools::RealtimePublisher<DiagnosticMsg>>
       rt_diagnostic_pub_;
-  // taskspace_control_msgs::msg::Diagnostic diagnostic_msg_;
 };
 
 }  // namespace taskspace_controllers
