@@ -9,7 +9,7 @@ find_package(sensor_msgs REQUIRED)
 
 set(msg_files
   "msg/PoseTwistSetpoint.msg"
-  "msg/TaskspaceControlDiagnostic.msg"
+  "msg/Diagnostic.msg"
 )
 set(srv_files "srv/QueryPose.srv")
 

@@ -145,14 +145,8 @@ PoseController::update(const rclcpp::Time& time, const rclcpp::Duration& period)
                                   period.seconds());
   write_command(cmd);
 
-#ifdef TASKSPACE_CONTROLLERS_ENABLE_DIAGNOSTIC_PUBLISHER
-  KDL::JntArrayVel state_error(n_joints_);
-  ctrl::computeStateError(cmd, joint_state_, state_error);
-
-  TaskspaceControllerBase::publish_state_diagnostic(time, cmd, joint_state_,
-                                                    state_error, sp_pose, pose,
-                                                    trans_error, orient_error);
-#endif
+  // Controller diagnostics
+  publish_diagnostics(time, cmd, joint_state_, sp_pose, pose);
 
   return controller_interface::return_type::OK;
 }

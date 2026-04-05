@@ -145,19 +145,6 @@ void computePoseError(const ctrl::Pose& target, const ctrl::Pose& current,
                       ctrl::Vector3D& orientation_error);
 
 /**
- * @brief Computes joint-space error between a command and measured state
- *
- * The error is computed as command - state for both position and velocity.
- *
- * @param command the commanded joint state
- * @param state the measured joint state
- * @param state_error output joint-space error
- */
-void computeStateError(const KDL::JntArrayVel& command,
-                       const KDL::JntArrayVel& state,
-                       KDL::JntArrayVel& state_error);
-
-/**
  * @brief Generate a joint position/velocity command with limit enforcement
  *
  * Applies velocity saturation and integrates joint velocities over the given

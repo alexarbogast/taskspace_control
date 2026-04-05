@@ -113,23 +113,6 @@ void computePoseError(const ctrl::Pose& target, const ctrl::Pose& current,
   orientation_error = aa.axis() * aa.angle();
 }
 
-void computeStateError(const KDL::JntArrayVel& command,
-                       const KDL::JntArrayVel& state,
-                       KDL::JntArrayVel& state_error)
-{
-  const size_t n_joints = command.q.rows();
-  if (state_error.q.rows() != n_joints || state_error.qdot.rows() != n_joints)
-  {
-    state_error.resize(n_joints);
-  }
-
-  for (size_t joint_ind = 0; joint_ind < n_joints; ++joint_ind)
-  {
-    state_error.q(joint_ind) = command.q(joint_ind) - state.q(joint_ind);
-    state_error.qdot(joint_ind) = command.qdot(joint_ind) - state.qdot(joint_ind);
-  }
-}
-
 KDL::JntArrayVel create_command(
     const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
     const std::vector<joint_limits::JointLimits>& joint_limits, double dt)

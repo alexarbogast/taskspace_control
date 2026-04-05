@@ -186,24 +186,26 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
       std::bind(&TaskspaceControllerBase::queryPoseServiceCb, this,
                 std::placeholders::_1, std::placeholders::_2));
 
-  state_pub_ = get_node()
-                   ->create_publisher<
-                       taskspace_control_msgs::msg::TaskspaceControlDiagnostic>(
-                       get_node()->get_name() + std::string("/taskspace_"
-                                                            "control_"
-                                                            "diagnostic"),
-                       10);
-  rt_state_pub_ = std::make_unique<realtime_tools::RealtimePublisher<
-      taskspace_control_msgs::msg::TaskspaceControlDiagnostic>>(state_pub_);
-  diagnostic_msg_.command.name = joint_names_;
-  diagnostic_msg_.command.position.resize(n_joints_);
-  diagnostic_msg_.command.velocity.resize(n_joints_);
-  diagnostic_msg_.state.name = joint_names_;
-  diagnostic_msg_.state.position.resize(n_joints_);
-  diagnostic_msg_.state.velocity.resize(n_joints_);
-  diagnostic_msg_.state_error.name = joint_names_;
-  diagnostic_msg_.state_error.position.resize(n_joints_);
-  diagnostic_msg_.state_error.velocity.resize(n_joints_);
+  RCLCPP_INFO(get_node()->get_logger(), "Diagnostics enabled: %s",
+              params_.enable_diagnostics ? "true" : "false");
+  if (params_.enable_diagnostics)
+  {
+    diagnostic_pub_ =
+        get_node()->create_publisher<taskspace_control_msgs::msg::Diagnostic>(
+            "~/diagnostics", rclcpp::SystemDefaultsQoS());
+    rt_diagnostic_pub_ = std::make_unique<realtime_tools::RealtimePublisher<
+        taskspace_control_msgs::msg::Diagnostic>>(diagnostic_pub_);
+
+    auto init_joint_state = [&](auto& js) {
+      js.name = joint_names_;
+      js.position.resize(n_joints_);
+      js.velocity.resize(n_joints_);
+    };
+
+    init_joint_state(rt_diagnostic_pub_->msg_.command);
+    init_joint_state(rt_diagnostic_pub_->msg_.state);
+    init_joint_state(rt_diagnostic_pub_->msg_.state_error);
+  }
 
   RCLCPP_INFO(logger, "TaskspaceControllerBase configured for %u joints.",
               n_joints_);
@@ -374,60 +376,49 @@ bool TaskspaceControllerBase::queryPoseServiceCb(
   return true;
 }
 
-void TaskspaceControllerBase::publish_state_diagnostic(
+void TaskspaceControllerBase::publish_diagnostics(
     const rclcpp::Time& time, const KDL::JntArrayVel& joint_cmd,
-    const KDL::JntArrayVel& joint_state, const KDL::JntArrayVel& state_error,
-    const ctrl::Pose& sp_pose, const ctrl::Pose& pose,
-    const ctrl::Vector3D& trans_error, const ctrl::Vector3D& orient_error)
+    const KDL::JntArrayVel& joint_fb, const ctrl::Pose& pose_cmd,
+    const ctrl::Pose& pose_fb)
 {
-  if (!rt_state_pub_)
-  {
+  if (!rt_diagnostic_pub_ || !rt_diagnostic_pub_->trylock())
     return;
-  }
 
-  // Match update time instead of node time
-  diagnostic_msg_.command.header.stamp = time;
-  diagnostic_msg_.state.header.stamp = time;
-  diagnostic_msg_.state_error.header.stamp = time;
+  ctrl::Vector3D trans_error, orient_error;
+  ctrl::computePoseError(pose_cmd, pose_fb, trans_error, orient_error);
 
-  for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
+  auto& msg = rt_diagnostic_pub_->msg_;
+  msg.header.stamp = time;
+
+  Eigen::Map<ctrl::VectorND>(msg.command.position.data(), n_joints_) =
+      joint_cmd.q.data;
+  Eigen::Map<ctrl::VectorND>(msg.command.velocity.data(), n_joints_) =
+      joint_cmd.qdot.data;
+  Eigen::Map<ctrl::VectorND>(msg.state.position.data(), n_joints_) =
+      joint_fb.q.data;
+  Eigen::Map<ctrl::VectorND>(msg.state_error.position.data(), n_joints_) =
+      joint_cmd.q.data - joint_fb.q.data;
+
+  if (has_velocity_state_interface_)
   {
-    diagnostic_msg_.command.position[joint_ind] = joint_cmd.q(joint_ind);
-    diagnostic_msg_.command.velocity[joint_ind] = joint_cmd.qdot(joint_ind);
-    diagnostic_msg_.state.position[joint_ind] = joint_state.q(joint_ind);
-    diagnostic_msg_.state.velocity[joint_ind] = joint_state.qdot(joint_ind);
-    diagnostic_msg_.state_error.position[joint_ind] = state_error.q(joint_ind);
-    diagnostic_msg_.state_error.velocity[joint_ind] =
-        state_error.qdot(joint_ind);
+    Eigen::Map<ctrl::VectorND>(msg.state.velocity.data(), n_joints_) =
+        joint_fb.qdot.data;
+    Eigen::Map<ctrl::VectorND>(msg.state_error.velocity.data(), n_joints_) =
+        joint_cmd.qdot.data - joint_fb.qdot.data;
   }
 
-  diagnostic_msg_.setpoint = ctrl::transformEigenToROS(sp_pose);
-  diagnostic_msg_.pose = ctrl::transformEigenToROS(pose);
-  diagnostic_msg_.pose_error.position.x = trans_error.x();
-  diagnostic_msg_.pose_error.position.y = trans_error.y();
-  diagnostic_msg_.pose_error.position.z = trans_error.z();
-  diagnostic_msg_.pose_error.orientation.x = 0.0;
-  diagnostic_msg_.pose_error.orientation.y = 0.0;
-  diagnostic_msg_.pose_error.orientation.z = 0.0;
-  diagnostic_msg_.pose_error.orientation.w = 1.0;
+  // TODO: write utility function for converting 3D vector to ROS
+  msg.position_error.x = trans_error.x();
+  msg.position_error.y = trans_error.y();
+  msg.position_error.z = trans_error.z();
+  msg.position_error_norm = trans_error.norm();
 
-  if (orient_error.norm() > 0.0)
-  {
-    const ctrl::AngleAxis aa(orient_error.norm(), orient_error.normalized());
-    const ctrl::Quaternion q_error(aa);
-    diagnostic_msg_.pose_error.orientation.x = q_error.x();
-    diagnostic_msg_.pose_error.orientation.y = q_error.y();
-    diagnostic_msg_.pose_error.orientation.z = q_error.z();
-    diagnostic_msg_.pose_error.orientation.w = q_error.w();
-  }
+  msg.orientation_error.x = orient_error.x();
+  msg.orientation_error.y = orient_error.y();
+  msg.orientation_error.z = orient_error.z();
+  msg.orientation_error_norm = orient_error.norm();
 
-#ifdef TASKSPACE_CONTROLLERS_JAZZY
-  rt_state_pub_->try_publish(diagnostic_msg_);
-#else
-  rt_state_pub_->lock();
-  rt_state_pub_->msg_ = diagnostic_msg_;
-  rt_state_pub_->unlockAndPublish();
-#endif
+  rt_diagnostic_pub_->unlockAndPublish();
 }
 
 }  // namespace taskspace_controllers

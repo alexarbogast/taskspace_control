@@ -35,3 +35,9 @@ taskspace_controller_base:
     default_value: 0.001,
     description: "Minimum manipulability index w = sqrt(det(J*J^T)) below which output is zeroed."
   }
+  enable_diagnostics: {
+    type: bool,
+    default_value: false,
+    description: "Enable publishing of taskspace control diagnostics",
+    read_only: true
+  }

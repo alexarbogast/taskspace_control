@@ -26,6 +26,7 @@ pose_controller:
     k_orient: 10.0
 
     setpoint_topic: setpoint
+    enable_diagnostics: true
 
 task_priority_controller:
   ros__parameters:

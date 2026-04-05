@@ -21,9 +21,8 @@
 
 #include "realtime_tools/realtime_publisher.hpp"
 #include "taskspace_controllers/utility.hpp"
-#include "taskspace_control_msgs/msg/taskspace_control_diagnostic.hpp"
+#include "taskspace_control_msgs/msg/diagnostic.hpp"
 #include "taskspace_control_msgs/srv/query_pose.hpp"
-#include "trajectory_msgs/msg/joint_trajectory_point.hpp"
 #include "controller_interface/controller_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "joint_limits/joint_limits.hpp"
@@ -76,6 +75,13 @@ protected:
   virtual bool queryPoseServiceCb(const std::shared_ptr<QueryPose::Request> req,
                                   std::shared_ptr<QueryPose::Response> resp);
 
+  // Controller diagnostics
+  void publish_diagnostics(const rclcpp::Time& time,
+                           const KDL::JntArrayVel& joint_cmd,
+                           const KDL::JntArrayVel& joint_fb,
+                           const ctrl::Pose& pose_cmd,
+                           const ctrl::Pose& pose_fb);
+
   std::shared_ptr<taskspace_controller_base::ParamListener> param_listener_;
   taskspace_controller_base::Params params_;
 
@@ -83,16 +89,6 @@ protected:
     hardware_interface::HW_IF_POSITION,
     hardware_interface::HW_IF_VELOCITY,
   };
-
-  // Diagnostic publishing helper
-  void publish_state_diagnostic(const rclcpp::Time& time,
-                                const KDL::JntArrayVel& joint_cmd,
-                                const KDL::JntArrayVel& joint_state,
-                                const KDL::JntArrayVel& state_error,
-                                const ctrl::Pose& sp_pose,
-                                const ctrl::Pose& pose,
-                                const ctrl::Vector3D& trans_error,
-                                const ctrl::Vector3D& orient_error);
 
   bool has_position_command_interface_ = false;
   bool has_velocity_command_interface_ = false;
@@ -120,13 +116,11 @@ protected:
   rclcpp::Service<QueryPose>::SharedPtr query_pose_service_;
 
   // Diagnostic
-  std::unique_ptr<realtime_tools::RealtimePublisher<
-      taskspace_control_msgs::msg::TaskspaceControlDiagnostic>>
-      rt_state_pub_;
-  std::shared_ptr<
-      rclcpp::Publisher<taskspace_control_msgs::msg::TaskspaceControlDiagnostic>>
-      state_pub_;
-  taskspace_control_msgs::msg::TaskspaceControlDiagnostic diagnostic_msg_;
+  using DiagnosticMsg = taskspace_control_msgs::msg::Diagnostic;
+  std::shared_ptr<rclcpp::Publisher<DiagnosticMsg>> diagnostic_pub_;
+  std::unique_ptr<realtime_tools::RealtimePublisher<DiagnosticMsg>>
+      rt_diagnostic_pub_;
+  // taskspace_control_msgs::msg::Diagnostic diagnostic_msg_;
 };
 
 }  // namespace taskspace_controllers
