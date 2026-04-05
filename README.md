@@ -106,15 +106,15 @@ Task-priority Controllers above).
   [twist-decomposition](https://www.researchgate.net/publication/228961289_The_joint-limits_and_singularity_avoidance_in_robotic_welding)
   for redundancy resolution.
 
-## Diagnostic Publisher
+## Controller Diagnostics
 
-The pose controller can be built to publish a diagnostic topic that includes:
+The `enable_diagnostics` parameter provides a mechanism for diagnosing
+`taskspace_controllers`. When set to `true`, the controllers publish a
+[`Diagnostic.msg`](./taskspace_control_msgs/msg/Diagnostic.msg) that relays the
+following:
 
-- State command, actual state, and state error
-- Desired pose (controller setpoint), actual pose, and pose error
+- Commanded joint state, feedback joint state, and joint state error
+- Desired pose (controller setpoint), feedback pose, and pose error
+- The magnitude of the translation and orientation error
 
-The diagnositc publisher is disabled by default. Enable the diagnostic publisher by building with the CMake argument:
-
-```sh
-colcon build --symlink-install --cmake-args "-DTASKSPACE_CONTROLLERS_ENABLE_DIAGNOSTIC_PUBLISHER=ON"
-```
+The diagnostic publisher is disabled by default.
