@@ -2,10 +2,6 @@
 *compile_commands.json
 *__pycache__/
 
-# IDE Files
-.vscode/
-.codex
-
 # ROS Build Outputs
 build/
 install/
