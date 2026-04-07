@@ -20,6 +20,9 @@
 #include <kdl/frames.hpp>
 #include <kdl/jntarrayvel.hpp>
 
+#include "geometry_msgs/msg/vector3.hpp"
+#include "geometry_msgs/msg/pose.hpp"
+
 #include "joint_limits/joint_limits.hpp"
 
 namespace ctrl
@@ -119,6 +122,36 @@ KDL::JntArray transformEigenToKDL(const ctrl::VectorND& q);
  * @param R the rotation matrix
  */
 KDL::Rotation transformEigenToKDL(const ctrl::Matrix3D& R);
+
+/**
+ * @brief Transforms an Eigen pose to a ROS Pose message
+ *
+ * @param p the Eigen pose to transform
+ */
+geometry_msgs::msg::Pose transformEigenToROS(const ctrl::Pose& p);
+
+/**
+ * @brief Transforms an 3D Eigen vector to a ROS Vector3 message
+ *
+ * @param v the Eigen vector to transform
+ */
+geometry_msgs::msg::Vector3 transformEigenToROS(const ctrl::Vector3D& v);
+
+/**
+ * @brief Computes the translation and orientation error between two poses
+ *
+ * The error is computed as target - current for translation, and as the
+ * axis-angle vector of target.rotation() * current.rotation().inverse() for
+ * orientation.
+ *
+ * @param target the target pose
+ * @param current the current pose
+ * @param translation_error output translation error
+ * @param orientation_error output orientation error
+ */
+void computePoseError(const ctrl::Pose& target, const ctrl::Pose& current,
+                      ctrl::Vector3D& translation_error,
+                      ctrl::Vector3D& orientation_error);
 
 /**
  * @brief Generate a joint position/velocity command with limit enforcement

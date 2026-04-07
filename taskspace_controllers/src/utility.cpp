@@ -87,6 +87,42 @@ KDL::Rotation transformEigenToKDL(const Eigen::Matrix3d& R)
   // clang-format on
 }
 
+geometry_msgs::msg::Pose transformEigenToROS(const ctrl::Pose& p)
+{
+  geometry_msgs::msg::Pose msg;
+  msg.position.x = p.translation().x();
+  msg.position.y = p.translation().y();
+  msg.position.z = p.translation().z();
+
+  const Quaternion q(p.rotation());
+  msg.orientation.x = q.x();
+  msg.orientation.y = q.y();
+  msg.orientation.z = q.z();
+  msg.orientation.w = q.w();
+
+  return msg;
+}
+
+geometry_msgs::msg::Vector3 transformEigenToROS(const ctrl::Vector3D& v)
+{
+  geometry_msgs::msg::Vector3 msg;
+
+  msg.x = v.x();
+  msg.y = v.y();
+  msg.z = v.z();
+  return msg;
+}
+
+void computePoseError(const ctrl::Pose& target, const ctrl::Pose& current,
+                      ctrl::Vector3D& translation_error,
+                      ctrl::Vector3D& orientation_error)
+{
+  translation_error = target.translation() - current.translation();
+
+  const AngleAxis aa(target.rotation() * current.rotation().inverse());
+  orientation_error = aa.axis() * aa.angle();
+}
+
 KDL::JntArrayVel create_command(
     const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
     const std::vector<joint_limits::JointLimits>& joint_limits, double dt)

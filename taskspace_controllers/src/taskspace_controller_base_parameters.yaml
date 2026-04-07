@@ -9,6 +9,17 @@ taskspace_controller_base:
     },
     read_only: true
   }
+  state_interfaces: {
+    type: string_array,
+    description: "Names of the state interfaces to read",
+    default_value: ["position"],
+    validation: {
+      unique<>: null,
+      size_gt<>: [0],
+      subset_of<>: [["position", "velocity"]],
+    },
+    read_only: true
+  }
   base_link: {
     type: string,
     description: "Name of the base reference frame",
@@ -23,4 +34,10 @@ taskspace_controller_base:
     type: double,
     default_value: 0.001,
     description: "Minimum manipulability index w = sqrt(det(J*J^T)) below which output is zeroed."
+  }
+  enable_diagnostics: {
+    type: bool,
+    default_value: false,
+    description: "Enable publishing of taskspace control diagnostics",
+    read_only: true
   }

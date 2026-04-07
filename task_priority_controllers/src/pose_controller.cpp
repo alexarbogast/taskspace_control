@@ -58,8 +58,8 @@ PoseController::on_configure(const rclcpp_lifecycle::State& previous_state)
   return CallbackReturn::SUCCESS;
 }
 
-controller_interface::return_type PoseController::update(
-    const rclcpp::Time& /*time*/, const rclcpp::Duration& period)
+controller_interface::return_type
+PoseController::update(const rclcpp::Time& time, const rclcpp::Duration& period)
 {
   if (pose_param_listener_->is_old(pose_params_))
   {
@@ -109,6 +109,9 @@ controller_interface::return_type PoseController::update(
   auto cmd = ctrl::create_command(joint_state_.q, q_cmd, joint_limits_,
                                   period.seconds());
   write_command(cmd);
+
+  // Controller diagnostics
+  publish_diagnostics(time, cmd, joint_state_, sp_pose, pose);
 
   return controller_interface::return_type::OK;
 }

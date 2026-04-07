@@ -46,11 +46,13 @@ TaskspaceControllerBase::state_interface_configuration() const
   controller_interface::InterfaceConfiguration cfg;
   cfg.type = controller_interface::interface_configuration_type::INDIVIDUAL;
 
-  // use only position feedback for now
-  const std::string interface = "position";
-  for (const auto& joint : joint_names_)
+  cfg.names.reserve(n_joints_ * params_.state_interfaces.size());
+  for (const auto& type : params_.state_interfaces)
   {
-    cfg.names.push_back(joint + std::string("/").append(interface));
+    for (const auto& joint : joint_names_)
+    {
+      cfg.names.push_back(joint + std::string("/").append(type));
+    }
   }
   return cfg;
 }
@@ -80,6 +82,39 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
 {
   auto logger = get_node()->get_logger();
   params_ = param_listener_->get_params();
+
+  has_position_command_interface_ = ctrl::contains_interface_type(
+      params_.command_interfaces, hardware_interface::HW_IF_POSITION);
+  has_velocity_command_interface_ = ctrl::contains_interface_type(
+      params_.command_interfaces, hardware_interface::HW_IF_VELOCITY);
+
+  has_position_state_interface_ = ctrl::contains_interface_type(
+      params_.state_interfaces, hardware_interface::HW_IF_POSITION);
+  has_velocity_state_interface_ = ctrl::contains_interface_type(
+      params_.state_interfaces, hardware_interface::HW_IF_VELOCITY);
+
+  // Find interface based on type instead of assuming order
+  if (!has_position_state_interface_)
+  {
+    RCLCPP_FATAL(logger,
+                 "TaskspaceControllerBase requires a position state interface");
+    return controller_interface::CallbackReturn::ERROR;
+  }
+
+  position_state_interface_index_ =
+      std::distance(params_.state_interfaces.begin(),
+                    std::find(params_.state_interfaces.begin(),
+                              params_.state_interfaces.end(),
+                              hardware_interface::HW_IF_POSITION));
+
+  if (has_velocity_state_interface_)
+  {
+    velocity_state_interface_index_ =
+        std::distance(params_.state_interfaces.begin(),
+                      std::find(params_.state_interfaces.begin(),
+                                params_.state_interfaces.end(),
+                                hardware_interface::HW_IF_VELOCITY));
+  }
 
   std::string urdf_xml;
 #ifdef TASKSPACE_CONTROLLERS_JAZZY
@@ -127,11 +162,6 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
   last_commanded_ = last_reference_;
   joint_state_ = last_reference_;
 
-  has_position_command_interface_ = ctrl::contains_interface_type(
-      params_.command_interfaces, hardware_interface::HW_IF_POSITION);
-  has_velocity_command_interface_ = ctrl::contains_interface_type(
-      params_.command_interfaces, hardware_interface::HW_IF_VELOCITY);
-
   // Initialize the joint limits from the urdf
   joint_limits_.resize(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
@@ -155,6 +185,27 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
       get_node()->get_name() + std::string("/query_pose"),
       std::bind(&TaskspaceControllerBase::queryPoseServiceCb, this,
                 std::placeholders::_1, std::placeholders::_2));
+
+  RCLCPP_INFO(get_node()->get_logger(), "Diagnostics enabled: %s",
+              params_.enable_diagnostics ? "true" : "false");
+  if (params_.enable_diagnostics)
+  {
+    diagnostic_pub_ =
+        get_node()->create_publisher<taskspace_control_msgs::msg::Diagnostic>(
+            "~/diagnostics", rclcpp::SystemDefaultsQoS());
+    rt_diagnostic_pub_ = std::make_unique<realtime_tools::RealtimePublisher<
+        taskspace_control_msgs::msg::Diagnostic>>(diagnostic_pub_);
+
+    auto init_joint_state = [&](auto& js) {
+      js.name = joint_names_;
+      js.position.resize(n_joints_);
+      js.velocity.resize(n_joints_);
+    };
+
+    init_joint_state(rt_diagnostic_pub_->msg_.command);
+    init_joint_state(rt_diagnostic_pub_->msg_.state);
+    init_joint_state(rt_diagnostic_pub_->msg_.state_error);
+  }
 
   RCLCPP_INFO(logger, "TaskspaceControllerBase configured for %u joints.",
               n_joints_);
@@ -201,17 +252,43 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_shutdown(
 void TaskspaceControllerBase::read_state_from_hardware(KDL::JntArrayVel& state)
 {
   bool nan_position = false;
-  size_t pos_ind = 0;
   for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
   {
     state.q(joint_ind) =
-        state_interfaces_[pos_ind * n_joints_ + joint_ind].get_value();
+        state_interfaces_[position_state_interface_index_ * n_joints_ +
+                          joint_ind]
+            .get_value();
     nan_position |= std::isnan(state.q(joint_ind));
   }
 
   if (nan_position)
   {
     state.q = last_commanded_.q;
+  }
+
+  bool nan_velocity = false;
+  if (has_velocity_state_interface_)
+  {
+    for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
+    {
+      state.qdot(joint_ind) =
+          state_interfaces_[velocity_state_interface_index_ * n_joints_ +
+                            joint_ind]
+              .get_value();
+      nan_velocity |= std::isnan(state.qdot(joint_ind));
+    }
+  }
+  else
+  {
+    for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
+    {
+      state.qdot(joint_ind) = 0.0;
+    }
+  }
+
+  if (nan_velocity)
+  {
+    state.qdot = last_commanded_.qdot;
   }
 }
 
@@ -297,6 +374,46 @@ bool TaskspaceControllerBase::queryPoseServiceCb(
                        resp->pose.orientation.z, resp->pose.orientation.w);
 
   return true;
+}
+
+void TaskspaceControllerBase::publish_diagnostics(
+    const rclcpp::Time& time, const KDL::JntArrayVel& joint_cmd,
+    const KDL::JntArrayVel& joint_fb, const ctrl::Pose& pose_cmd,
+    const ctrl::Pose& pose_fb)
+{
+  if (!rt_diagnostic_pub_ || !rt_diagnostic_pub_->trylock())
+    return;
+
+  ctrl::Vector3D trans_error, orient_error;
+  ctrl::computePoseError(pose_cmd, pose_fb, trans_error, orient_error);
+
+  auto& msg = rt_diagnostic_pub_->msg_;
+  msg.header.stamp = time;
+
+  Eigen::Map<ctrl::VectorND>(msg.command.position.data(), n_joints_) =
+      joint_cmd.q.data;
+  Eigen::Map<ctrl::VectorND>(msg.command.velocity.data(), n_joints_) =
+      joint_cmd.qdot.data;
+  Eigen::Map<ctrl::VectorND>(msg.state.position.data(), n_joints_) =
+      joint_fb.q.data;
+  Eigen::Map<ctrl::VectorND>(msg.state_error.position.data(), n_joints_) =
+      joint_cmd.q.data - joint_fb.q.data;
+
+  if (has_velocity_state_interface_)
+  {
+    Eigen::Map<ctrl::VectorND>(msg.state.velocity.data(), n_joints_) =
+        joint_fb.qdot.data;
+    Eigen::Map<ctrl::VectorND>(msg.state_error.velocity.data(), n_joints_) =
+        joint_cmd.qdot.data - joint_fb.qdot.data;
+  }
+
+  msg.position_error = ctrl::transformEigenToROS(trans_error);
+  msg.position_error_norm = trans_error.norm();
+
+  msg.orientation_error = ctrl::transformEigenToROS(orient_error);
+  msg.orientation_error_norm = orient_error.norm();
+
+  rt_diagnostic_pub_->unlockAndPublish();
 }
 
 }  // namespace taskspace_controllers

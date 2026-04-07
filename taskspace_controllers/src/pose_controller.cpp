@@ -98,8 +98,8 @@ PoseController::on_activate(const rclcpp_lifecycle::State& previous_state)
   return CallbackReturn::SUCCESS;
 }
 
-controller_interface::return_type PoseController::update(
-    const rclcpp::Time& /*time*/, const rclcpp::Duration& period)
+controller_interface::return_type
+PoseController::update(const rclcpp::Time& time, const rclcpp::Duration& period)
 {
   if (pose_param_listener_->is_old(pose_params_))
   {
@@ -128,9 +128,9 @@ controller_interface::return_type PoseController::update(
   ctrl::transformKDLToEigen(setpoint->pose, sp_pose);
 
   // --- Error computation ---
-  ctrl::AngleAxis aa(sp_pose.rotation() * pose.rotation().inverse());
-  ctrl::Vector3D orient_error = aa.axis() * aa.angle();
-  ctrl::Vector3D trans_error(sp_pose.translation() - pose.translation());
+  ctrl::Vector3D orient_error;
+  ctrl::Vector3D trans_error;
+  ctrl::computePoseError(sp_pose, pose, trans_error, orient_error);
 
   ctrl::Vector6D cart_cmd;
   cart_cmd << pose_params_.k_position * trans_error,
@@ -144,6 +144,9 @@ controller_interface::return_type PoseController::update(
   auto cmd = ctrl::create_command(joint_state_.q, q_cmd, joint_limits_,
                                   period.seconds());
   write_command(cmd);
+
+  // Controller diagnostics
+  publish_diagnostics(time, cmd, joint_state_, sp_pose, pose);
 
   return controller_interface::return_type::OK;
 }

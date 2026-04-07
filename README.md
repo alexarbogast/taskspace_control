@@ -1,4 +1,4 @@
-# Task-space Controllers
+# Task-space Control
 
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![ROS2 CI](https://github.com/alexarbogast/taskspace_control/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/alexarbogast/taskspace_control/actions/workflows/build-and-test.yml)
@@ -105,3 +105,16 @@ Task-priority Controllers above).
   This controller uses
   [twist-decomposition](https://www.researchgate.net/publication/228961289_The_joint-limits_and_singularity_avoidance_in_robotic_welding)
   for redundancy resolution.
+
+## Controller Diagnostics
+
+The `enable_diagnostics` parameter provides a mechanism for diagnosing
+`taskspace_controllers/PoseController` and `task_priority_controllers/PoseController`. When set to `true`, the controllers publish a
+[`Diagnostic.msg`](./taskspace_control_msgs/msg/Diagnostic.msg) that relays the
+following:
+
+- Commanded joint state, feedback joint state, and joint state error
+- Desired pose (controller setpoint), feedback pose, and pose error
+- The magnitude of the translation and orientation error
+
+The diagnostic publisher is disabled by default.
