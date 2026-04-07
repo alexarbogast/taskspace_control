@@ -109,7 +109,7 @@ Task-priority Controllers above).
 ## Controller Diagnostics
 
 The `enable_diagnostics` parameter provides a mechanism for diagnosing
-`taskspace_controllers`. When set to `true`, the controllers publish a
+`taskspace_controllers/PoseController` and `task_priority_controllers/PoseController`. When set to `true`, the controllers publish a
 [`Diagnostic.msg`](./taskspace_control_msgs/msg/Diagnostic.msg) that relays the
 following:
 
