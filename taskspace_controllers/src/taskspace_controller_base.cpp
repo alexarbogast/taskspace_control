@@ -407,6 +407,9 @@ void TaskspaceControllerBase::publish_diagnostics(
         joint_cmd.qdot.data - joint_fb.qdot.data;
   }
 
+  msg.setpoint.pose = ctrl::transformEigenToROS(pose_cmd);
+  msg.pose.pose = ctrl::transformEigenToROS(pose_fb);
+
   msg.position_error = ctrl::transformEigenToROS(trans_error);
   msg.position_error_norm = trans_error.norm();
 
