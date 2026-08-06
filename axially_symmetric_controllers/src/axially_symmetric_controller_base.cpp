@@ -80,9 +80,6 @@ AxiallySymmetricControllerBase::on_activate(
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  // Initialize joint state from hardware
-  read_state_from_hardware(joint_state_);
-
   Setpoint fk;
   robot_fk_solver_->JntToCart(joint_state_.q, fk.pose);
 

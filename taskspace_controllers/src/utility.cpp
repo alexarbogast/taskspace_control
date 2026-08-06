@@ -123,44 +123,44 @@ void computePoseError(const ctrl::Pose& target, const ctrl::Pose& current,
   orientation_error = aa.axis() * aa.angle();
 }
 
-KDL::JntArrayVel create_command(
-    const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
-    const std::vector<joint_limits::JointLimits>& joint_limits, double dt)
+void integrate_joint_velocity(
+    const ctrl::VectorND& initial_position,
+    const ctrl::VectorND& joint_velocity_command,
+    const std::vector<joint_limits::JointLimits>& joint_limits, double dt,
+    KDL::JntArrayVel& command)
 {
-  const size_t n_joints = q_current.rows();
-  KDL::JntArrayVel out(n_joints);
+  const size_t n_joints = initial_position.size();
   for (size_t i = 0; i < n_joints; ++i)
   {
     const auto& limits = joint_limits[i];
 
-    double q = q_current(i);
-    double qdot = q_dot_cmd(i);
+    const double position = initial_position(i);
+    double velocity = joint_velocity_command(i);
 
     // Velocity saturation
     if (!std::isnan(limits.max_velocity))
     {
-      qdot = std::clamp(qdot, -limits.max_velocity, limits.max_velocity);
+      velocity =
+          std::clamp(velocity, -limits.max_velocity, limits.max_velocity);
     }
 
     // Numerical Integration
-    double q_next = q + qdot * dt;
+    double next_position = position + velocity * dt;
 
     // Position saturation
     if (!std::isnan(limits.min_position) && !std::isnan(limits.max_position))
     {
-      double q_clamped =
-          std::clamp(q_next, limits.min_position, limits.max_position);
+      const double clamped_position =
+          std::clamp(next_position, limits.min_position, limits.max_position);
 
       // Back-compute velocity to stay consistent
-      qdot = (q_clamped - q) / dt;
-      q_next = q_clamped;
+      velocity = (clamped_position - position) / dt;
+      next_position = clamped_position;
     }
 
-    out.q(i) = q_next;
-    out.qdot(i) = qdot;
+    command.q(i) = next_position;
+    command.qdot(i) = velocity;
   }
-
-  return out;
 }
 
 bool contains_interface_type(

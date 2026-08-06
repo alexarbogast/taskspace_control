@@ -89,9 +89,6 @@ PoseController::on_activate(const rclcpp_lifecycle::State& previous_state)
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  // initialize joint state from hardware
-  read_state_from_hardware(joint_state_);
-
   Setpoint init_setpoint;
   robot_fk_solver_->JntToCart(joint_state_.q, init_setpoint.pose);
   setpoint_buffer_.writeFromNonRT(std::move(init_setpoint));
@@ -106,7 +103,11 @@ PoseController::update(const rclcpp::Time& time, const rclcpp::Duration& period)
     pose_params_ = pose_param_listener_->get_params();
   }
 
-  read_state_from_hardware(joint_state_);
+  if (!read_state_from_hardware(joint_state_))
+  {
+    stop_motion();
+    return controller_interface::return_type::ERROR;
+  }
   const Setpoint* setpoint = setpoint_buffer_.readFromRT();
 
   KDL::Jacobian jac(n_joints_);
@@ -138,15 +139,13 @@ PoseController::update(const rclcpp::Time& time, const rclcpp::Duration& period)
   cart_cmd += setpoint->twist;
 
   // --- Control law ---
-  ctrl::VectorND joint_cmd = ctrl::rightPinv(jac.data) * cart_cmd;
+  ctrl::VectorND joint_velocity = ctrl::rightPinv(jac.data) * cart_cmd;
 
-  KDL::JntArray q_cmd = ctrl::transformEigenToKDL(joint_cmd);
-  auto cmd = ctrl::create_command(joint_state_.q, q_cmd, joint_limits_,
-                                  period.seconds());
-  write_command(cmd);
+  const auto& joint_command = update_joint_command(joint_velocity, period);
+  write_joint_command(joint_command);
 
   // Controller diagnostics
-  publish_diagnostics(time, cmd, joint_state_, sp_pose, pose);
+  publish_diagnostics(time, joint_command, joint_state_, sp_pose, pose);
 
   return controller_interface::return_type::OK;
 }
