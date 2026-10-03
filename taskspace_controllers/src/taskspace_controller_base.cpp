@@ -264,8 +264,7 @@ void TaskspaceControllerBase::read_state_from_hardware(KDL::JntArrayVel& state)
   bool nan_velocity = false;
   if (has_velocity_state_interface_)
   {
-    const size_t velocity_offset =
-        has_position_state_interface_ ? n_joints_ : 0;
+    const auto velocity_offset = has_position_state_interface_ ? n_joints_ : 0;
 
     for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
     {
@@ -290,40 +289,43 @@ void TaskspaceControllerBase::read_state_from_hardware(KDL::JntArrayVel& state)
 
 void TaskspaceControllerBase::write_command(const KDL::JntArrayVel& cmd)
 {
-  size_t pos_ind = 0;
-  size_t vel_ind = (has_position_command_interface_) ?
-                       pos_ind + has_velocity_command_interface_ :
-                       pos_ind;
-  for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
+  if (has_position_command_interface_)
   {
-    if (has_position_command_interface_)
+    for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
     {
-      command_interfaces_[pos_ind * n_joints_ + joint_ind].set_value(
-          cmd.q(joint_ind));
+      command_interfaces_[joint_ind].set_value(cmd.q(joint_ind));
     }
-    if (has_velocity_command_interface_)
+  }
+
+  if (has_velocity_command_interface_)
+  {
+    const auto velocity_offset =
+        has_position_command_interface_ ? n_joints_ : 0;
+
+    for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
     {
-      command_interfaces_[vel_ind * n_joints_ + joint_ind].set_value(
+      command_interfaces_[velocity_offset + joint_ind].set_value(
           cmd.qdot(joint_ind));
     }
   }
+
   last_commanded_ = cmd;
 }
 
 void TaskspaceControllerBase::stop_motion()
 {
-  // Stop motion for velocity control
-  if (has_velocity_command_interface_)
+  if (!has_velocity_command_interface_ ||
+      command_interfaces_.size() < n_joints_)
   {
-    size_t pos_ind = 0;
-    size_t vel_ind = (has_position_command_interface_) ?
-                         pos_ind + has_velocity_command_interface_ :
-                         pos_ind;
+    return;
+  }
 
-    for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
-    {
-      command_interfaces_[vel_ind * n_joints_ + joint_ind].set_value(0.0);
-    }
+  const auto velocity_offset = has_position_command_interface_ ? n_joints_ : 0;
+
+  // Stop motion for velocity control
+  for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
+  {
+    command_interfaces_[velocity_offset + joint_ind].set_value(0.0);
   }
 }
 
