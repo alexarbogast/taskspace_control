@@ -30,11 +30,18 @@ TaskspaceControllerBase::command_interface_configuration() const
   controller_interface::InterfaceConfiguration cfg;
   cfg.type = controller_interface::interface_configuration_type::INDIVIDUAL;
   cfg.names.reserve(n_joints_ * params_.command_interfaces.size());
-  for (const auto& type : params_.command_interfaces)
+
+  for (const auto& type : { hardware_interface::HW_IF_POSITION,
+                            hardware_interface::HW_IF_VELOCITY })
   {
+    if (!ctrl::contains_interface_type(params_.command_interfaces, type))
+    {
+      continue;
+    }
+
     for (const auto& joint : joint_names_)
     {
-      cfg.names.push_back(joint + std::string("/").append(type));
+      cfg.names.push_back(joint + "/" + type);
     }
   }
   return cfg;
@@ -45,13 +52,19 @@ TaskspaceControllerBase::state_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration cfg;
   cfg.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-
   cfg.names.reserve(n_joints_ * params_.state_interfaces.size());
-  for (const auto& type : params_.state_interfaces)
+
+  for (const auto& type : { hardware_interface::HW_IF_POSITION,
+                            hardware_interface::HW_IF_VELOCITY })
   {
+    if (!ctrl::contains_interface_type(params_.state_interfaces, type))
+    {
+      continue;
+    }
+
     for (const auto& joint : joint_names_)
     {
-      cfg.names.push_back(joint + std::string("/").append(type));
+      cfg.names.push_back(joint + "/" + type);
     }
   }
   return cfg;
@@ -99,21 +112,6 @@ controller_interface::CallbackReturn TaskspaceControllerBase::on_configure(
     RCLCPP_FATAL(logger,
                  "TaskspaceControllerBase requires a position state interface");
     return controller_interface::CallbackReturn::ERROR;
-  }
-
-  position_state_interface_index_ =
-      std::distance(params_.state_interfaces.begin(),
-                    std::find(params_.state_interfaces.begin(),
-                              params_.state_interfaces.end(),
-                              hardware_interface::HW_IF_POSITION));
-
-  if (has_velocity_state_interface_)
-  {
-    velocity_state_interface_index_ =
-        std::distance(params_.state_interfaces.begin(),
-                      std::find(params_.state_interfaces.begin(),
-                                params_.state_interfaces.end(),
-                                hardware_interface::HW_IF_VELOCITY));
   }
 
   std::string urdf_xml;
@@ -254,10 +252,7 @@ void TaskspaceControllerBase::read_state_from_hardware(KDL::JntArrayVel& state)
   bool nan_position = false;
   for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
   {
-    state.q(joint_ind) =
-        state_interfaces_[position_state_interface_index_ * n_joints_ +
-                          joint_ind]
-            .get_value();
+    state.q(joint_ind) = state_interfaces_[joint_ind].get_value();
     nan_position |= std::isnan(state.q(joint_ind));
   }
 
@@ -269,12 +264,13 @@ void TaskspaceControllerBase::read_state_from_hardware(KDL::JntArrayVel& state)
   bool nan_velocity = false;
   if (has_velocity_state_interface_)
   {
+    const size_t velocity_offset =
+        has_position_state_interface_ ? n_joints_ : 0;
+
     for (size_t joint_ind = 0; joint_ind < n_joints_; ++joint_ind)
     {
       state.qdot(joint_ind) =
-          state_interfaces_[velocity_state_interface_index_ * n_joints_ +
-                            joint_ind]
-              .get_value();
+          state_interfaces_[velocity_offset + joint_ind].get_value();
       nan_velocity |= std::isnan(state.qdot(joint_ind));
     }
   }
