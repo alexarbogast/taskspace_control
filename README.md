@@ -5,12 +5,16 @@
 [![ros - humble](https://img.shields.io/badge/ROS2-Humble-blue)](https://docs.ros.org/en/humble/index.html)
 [![ros - jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)](https://docs.ros.org/en/jazzy/index.html)
 
-The `taskspace_control` package provides [**task-space**](https://modernrobotics.northwestern.edu/nu-gm-book-resource/2-5-task-space-and-workspace/) controllers for robotic manipulators using the [ros2_control](https://github.com/ros-controls/ros2_control) framework.
+This package provides controllers for commanding [**task-space**](https://modernrobotics.northwestern.edu/nu-gm-book-resource/2-5-task-space-and-workspace/) motions of robotic manipulators with the [ros2_control](https://github.com/ros-controls/ros2_control) framework.
 
 ## Package Overview
 
-The controllers in this package subscribe to a [`PoseTwistSetpoint.msg`](./taskspace_control_msgs/msg/PoseTwistSetpoint.msg), defined by a pose $\mathbf{T} \in \mathbf{SE}(3)$ and a twist $\xi \in \mathbb{R}^6$.
-The `taskspace_control_examples` package provides an example setpoint publisher.
+The controllers in this package subscribe to a task-space setpoint ([`PoseTwistSetpoint.msg`](./taskspace_control_msgs/msg/PoseTwistSetpoint.msg)), defined by a pose $\mathbf{T} \in \mathbf{SE}(3)$ and a twist $\xi \in \mathbb{R}^6$.
+An example setpoint publisher is provided in the `taskspace_control_examples` package.
+
+Task-space control is useful when the goal is naturally expressed in terms of end-effector motion, such as moving a tool, tracking a Cartesian trajectory, or regulating the pose of a grasped object.
+Instead of directly commanding individual joint motions or computing a joint trajectory via inverse kinematics, users can specify the desired pose and velocity of the end effector in Cartesian space.
+This is often more intuitive for manufacturing and manipulation related tasks.
 
 ## Running the Demos
 
@@ -61,7 +65,7 @@ A basic configuration for the controllers below can be found in the `taskspace_c
 
 ### Task-priority Controllers
 
-If the robot is kinematically redundant (i.e. there are more than 6 joints) than a [task priority](https://roboticsknowledgebase.com/wiki/actuation/task-prioritization-control/) controller can be used to achieve a secondary set of objectives in addition to tracking the setpoint.
+If the robot is kinematically redundant (i.e. there are more than 6 joints) than a [task-priority](https://roboticsknowledgebase.com/wiki/actuation/task-prioritization-control/) controller can be used to achieve a secondary set of objectives, in addition to tracking the setpoint.
 This is done through a nullspace projection using the robot's Jacobian.
 The redundancy resolution objective, or secondary priority task, is defined by a plugin that's loaded at runtime.
 See [`objective_plugins.xml`](./task_priority_controllers/objective_plugins.xml) for a list of provided plugins.
@@ -72,7 +76,7 @@ See [`objective_plugins.xml`](./task_priority_controllers/objective_plugins.xml)
 
 ### Axially-symmetric Controllers
 
-Axially-symmetric controllers inherit from the Task-priority controllers.
+Axially-symmetric controllers inherit from the Task-priority controller.
 These controllers treat the setpoint as a 5-DOF task with three position constraints (x, y, z) and two orientation constraints.
 The manipulator will track a provided position and align the `eef_frame_axis` with the `setpoint_frame_axis` (see: [`axially_symmetric_controller_parameters.yaml`](https://github.com/alexarbogast/taskspace_control/blob/ros2/axially_symmetric_controllers/src/axially_symmetric_controller_parameters.yaml)).
 The rotation about the z-axis of the tool is left as a redundant axis, with the orientation ultimately determined by a redundancy resolution objective (see Task-priority Controllers above).
