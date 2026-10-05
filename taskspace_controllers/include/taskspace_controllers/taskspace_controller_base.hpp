@@ -62,10 +62,20 @@ public:
   on_shutdown(const rclcpp_lifecycle::State& previous_state) override;
 
 protected:
+  enum class JointPositionIntegrationMode
+  {
+    CLOSED_LOOP,
+    OPEN_LOOP,
+  };
+
   // Hardware interface methods
-  void read_state_from_hardware(KDL::JntArrayVel& state);
+  bool read_state_from_hardware(KDL::JntArrayVel& state);
+  const KDL::JntArrayVel&
+  update_joint_command(const ctrl::VectorND& joint_velocity_command,
+                       const rclcpp::Duration& period);
   void stop_motion();
-  void write_command(const KDL::JntArrayVel& cmd);
+  void write_zero_velocity_command();
+  void write_joint_command(const KDL::JntArrayVel& command);
 
   // Utility functions
   bool check_manipulability(const KDL::Jacobian& jac);
@@ -94,8 +104,6 @@ protected:
   bool has_velocity_command_interface_ = false;
   bool has_position_state_interface_ = false;
   bool has_velocity_state_interface_ = false;
-  size_t position_state_interface_index_ = 0;
-  size_t velocity_state_interface_index_ = 0;
 
   // Controller parameters
   std::vector<std::string> joint_names_;
@@ -109,8 +117,10 @@ protected:
 
   // State tracking
   KDL::JntArrayVel joint_state_;
-  KDL::JntArrayVel last_commanded_;
-  KDL::JntArrayVel last_reference_;
+  KDL::JntArrayVel joint_command_;
+  KDL::JntArrayVel joint_command_prev_;
+  JointPositionIntegrationMode integration_mode_ =
+      JointPositionIntegrationMode::CLOSED_LOOP;
 
   // Services
   rclcpp::Service<QueryPose>::SharedPtr query_pose_service_;

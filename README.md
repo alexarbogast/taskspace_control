@@ -50,8 +50,8 @@ parameters can be modified in the configurations files of the examples package.
 
 A list of available controller plugins can be found in the
 `*_controller_plugins.xml` of each package. The controllers are configured to
-work with hardware interfaces that accept a position and (optional) velocity command.
-A basic configuration for the controllers below can be found in the
+work with hardware interfaces that accept a position and (optional) velocity
+command. A basic configuration for the controllers below can be found in the
 `taskspace_control_examples` package config.
 
 ### Task-space Controllers
@@ -106,12 +106,59 @@ Task-priority Controllers above).
   [twist-decomposition](https://www.researchgate.net/publication/228961289_The_joint-limits_and_singularity_avoidance_in_robotic_welding)
   for redundancy resolution.
 
+## Joint-position Integration
+
+All controller types support the `joint_position_integration_mode` parameter:
+
+- `closed_loop` (default) integrates each joint-velocity command from the
+  current measured joint position.
+- `open_loop` integrates each joint-velocity command from the previous joint
+  reference. This mode requires a position command interface and a finite,
+  positive `open_loop_reference_error_limit`.
+
+For example:
+
+```yaml
+pose_controller:
+  ros__parameters:
+    joint_position_integration_mode: open_loop
+    open_loop_reference_error_limit: 0.05
+```
+
+In open-loop mode, the controller limits drift between commanded and measured
+joint positions by uniformly scaling the next joint-reference increment
+whenever applying the full step would exceed the configured
+`open_loop_reference_error_limit` bound.
+
+```text
+closed-loop:   q_measured(k)  +  qdot_cmd * dt  ->  q_cmd(k+1)
+open-loop:     q_cmd(k)       +  s * qdot_cmd * dt  -> q_cmd(k+1)
+                                 |
+                                 v
+           scale factor (0 ≤ s ≤ 1) so that
+           | q_cmd(k+1) - q_measured(k) |  ≤ error_limit
+```
+
+The open-loop configuration is useful in robots with *tracking lag*, where
+closed-loop integration pulls the next reference back toward the measured
+state.
+
+## Invalid Feedback Behavior
+
+If a non-finite value is read from a position or velocity state interface
+during an update cycle, the controller attempts to command the previous
+commanded joint-position and zero joint-velocity before returning an error.
+If a non-finite value is read from a position or velocity state interface
+during activation, the controller commands only zero joint-velocity (if
+that interface is available) without commanding a joint-position.
+
 ## Controller Diagnostics
 
 The `enable_diagnostics` parameter provides a mechanism for diagnosing
-`taskspace_controllers/PoseController` and `task_priority_controllers/PoseController`. When set to `true`, the controllers publish a
-[`Diagnostic.msg`](./taskspace_control_msgs/msg/Diagnostic.msg) that relays the
-following:
+`taskspace_controllers/PoseController` and
+`task_priority_controllers/PoseController`. When set to `true`, the controllers
+publish a [`Diagnostic.msg`](./taskspace_control_msgs/msg/Diagnostic.msg) that
+relays the following:
 
 - Commanded joint state, feedback joint state, and joint state error
 - Desired pose (controller setpoint), feedback pose, and pose error

@@ -26,7 +26,11 @@ controller_interface::return_type TwistDecompositionController::update(
     pose_params_ = pose_param_listener_->get_params();
   }
 
-  read_state_from_hardware(joint_state_);
+  if (!read_state_from_hardware(joint_state_))
+  {
+    stop_motion();
+    return controller_interface::return_type::ERROR;
+  }
   const Setpoint* setpoint = setpoint_buffer_.readFromRT();
 
   KDL::Jacobian jac(n_joints_);
@@ -81,12 +85,10 @@ controller_interface::return_type TwistDecompositionController::update(
   ctrl::Vector6D mod_cart_cmd = T * cart_cmd;
   mod_cart_cmd.block<3, 1>(3, 0) += perp_cmd;
 
-  ctrl::VectorND joint_cmd = J_pinv * mod_cart_cmd;
+  ctrl::VectorND joint_velocity = J_pinv * mod_cart_cmd;
 
-  KDL::JntArray q_cmd = ctrl::transformEigenToKDL(joint_cmd);
-  auto cmd = ctrl::create_command(joint_state_.q, q_cmd, joint_limits_,
-                                  period.seconds());
-  write_command(cmd);
+  const auto& joint_command = update_joint_command(joint_velocity, period);
+  write_joint_command(joint_command);
 
   return controller_interface::return_type::OK;
 }

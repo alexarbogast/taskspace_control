@@ -154,21 +154,24 @@ void computePoseError(const ctrl::Pose& target, const ctrl::Pose& current,
                       ctrl::Vector3D& orientation_error);
 
 /**
- * @brief Generate a joint position/velocity command with limit enforcement
+ * @brief Integrate a joint velocity command with limit enforcement
  *
  * Applies velocity saturation and integrates joint velocities over the given
  * timestep to compute the next joint positions. Position limits are enforced,
  * and velocities are adjusted to remain consistent with any clamping.
  *
- * @param q_current current joint positions
- * @param q_dot_cmd commanded joint velocities
+ * @param initial_position joint position from which to integrate
+ * @param joint_velocity_command commanded joint velocities
  * @param joint_limits per-joint position and velocity limits
  * @param dt integration timestep [s]
- * @return KDL::JntArrayVel resulting joint positions and velocities
+ * @param command preallocated output for resulting joint positions and
+ * velocities
  */
-KDL::JntArrayVel create_command(
-    const KDL::JntArray& q_current, const KDL::JntArray& q_dot_cmd,
-    const std::vector<joint_limits::JointLimits>& joint_limits, double dt);
+void integrate_joint_velocity(
+    const ctrl::VectorND& initial_position,
+    const ctrl::VectorND& joint_velocity_command,
+    const std::vector<joint_limits::JointLimits>& joint_limits, double dt,
+    KDL::JntArrayVel& command);
 
 /**
  * @brief Determine if a list of interfaces includes a certain type

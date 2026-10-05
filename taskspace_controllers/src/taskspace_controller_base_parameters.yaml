@@ -41,3 +41,18 @@ taskspace_controller_base:
     description: "Enable publishing of taskspace control diagnostics",
     read_only: true
   }
+  joint_position_integration_mode: {
+    type: string,
+    default_value: "closed_loop",
+    description: "Selects whether joint velocity is integrated from measured position or the previous joint reference",
+    validation: {
+      one_of<>: [["closed_loop", "open_loop"]],
+    },
+    read_only: true
+  }
+  open_loop_reference_error_limit: {
+    type: double,
+    default_value: 0.0,
+    description: "Error boundary used to scale joint-reference increments in open-loop integration mode",
+    read_only: true
+  }

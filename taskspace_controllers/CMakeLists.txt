@@ -27,6 +27,7 @@ find_package(kdl_parser REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(controller_interface REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 find_package(joint_limits REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 find_package(realtime_tools REQUIRED)
@@ -38,6 +39,7 @@ set(THIS_PACKAGE_DEPS
   kdl_parser
   pluginlib
   controller_interface
+  lifecycle_msgs
   joint_limits
   realtime_tools
   taskspace_control_msgs

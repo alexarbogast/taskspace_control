@@ -26,7 +26,11 @@ controller_interface::return_type NullspaceController::update(
     pose_params_ = pose_param_listener_->get_params();
   }
 
-  read_state_from_hardware(joint_state_);
+  if (!read_state_from_hardware(joint_state_))
+  {
+    stop_motion();
+    return controller_interface::return_type::ERROR;
+  }
   const Setpoint* setpoint = setpoint_buffer_.readFromRT();
 
   KDL::Jacobian jac(n_joints_);
@@ -69,12 +73,11 @@ controller_interface::return_type NullspaceController::update(
   ctrl::MatrixND J_pinv = ctrl::rightPinv(J);
 
   static ctrl::MatrixND I = ctrl::MatrixND::Identity(n_joints_, n_joints_);
-  ctrl::VectorND joint_cmd = J_pinv * cart_cmd + (I - J_pinv * J) * h;
+  ctrl::VectorND joint_velocity =
+      J_pinv * cart_cmd + (I - J_pinv * J) * h;
 
-  KDL::JntArray q_cmd = ctrl::transformEigenToKDL(joint_cmd);
-  auto cmd = ctrl::create_command(joint_state_.q, q_cmd, joint_limits_,
-                                  period.seconds());
-  write_command(cmd);
+  const auto& joint_command = update_joint_command(joint_velocity, period);
+  write_joint_command(joint_command);
 
   return controller_interface::return_type::OK;
 }
