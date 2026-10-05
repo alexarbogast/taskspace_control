@@ -125,9 +125,23 @@ pose_controller:
     open_loop_reference_error_limit: 0.05
 ```
 
-The error limit uniformly scales open-loop reference increments that would
-advance beyond the configured difference between joint reference and measured
-position.
+In open-loop mode, the controller limits drift between commanded and measured
+joint positions by uniformly scaling the next joint-reference increment
+whenever applying the full step would exceed the configured
+`open_loop_reference_error_limit` bound.
+
+```text
+closed-loop:   q_measured(k)  +  qdot_cmd * dt  ->  q_cmd(k+1)
+open-loop:     q_cmd(k)       +  s * qdot_cmd * dt  -> q_cmd(k+1)
+                                 |
+                                 v
+           scale factor (0 ≤ s ≤ 1) so that
+           | q_cmd(k+1) - q_measured(k) |  ≤ error_limit
+```
+
+The open-loop configuration is useful in robots with *tracking lag*, where
+closed-loop integration pulls the next reference back toward the measured
+state.
 
 ## Invalid Feedback Behavior
 
