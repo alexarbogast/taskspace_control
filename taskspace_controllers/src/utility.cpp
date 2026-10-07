@@ -27,11 +27,28 @@ MatrixND rightPinv(const MatrixND& matrix)
   return matrix.transpose() * (matrix * matrix.transpose()).inverse();
 }
 
+MatrixND pseudoInverse(const MatrixND& matrix)
+{
+  Eigen::CompleteOrthogonalDecomposition<MatrixND> cod(matrix);
+  return cod.pseudoInverse();
+}
+
 MatrixND dampedPinv(const MatrixND& matrix, double alpha)
 {
   MatrixND identity = MatrixND::Identity(matrix.rows(), matrix.rows());
   return matrix.transpose() *
          (matrix * matrix.transpose() + alpha * alpha * identity).inverse();
+}
+
+ctrl::Matrix3D skew(const ctrl::Vector3D& v)
+{
+  Matrix3D S;
+  // clang-format off
+  S << 0.0,  -v.z(), v.y(),
+       v.z(), 0.0,  -v.x(),
+      -v.y(), v.x(), 0.0;
+  // clang-format on
+  return S;
 }
 
 double compute_manipulability(const KDL::Jacobian& jac)

@@ -31,6 +31,7 @@ controller_interface::return_type NullspaceController::update(
     stop_motion();
     return controller_interface::return_type::ERROR;
   }
+
   const Setpoint* setpoint = setpoint_buffer_.readFromRT();
 
   KDL::Jacobian jac(n_joints_);
@@ -50,31 +51,32 @@ controller_interface::return_type NullspaceController::update(
   ctrl::transformKDLToEigen(pose_kdl.M, R_fk);
   ctrl::transformKDLToEigen(setpoint->pose.M, R_setpoint);
 
-  ctrl::Vector3D aim_current(R_fk * tool_frame_axis_);
-  ctrl::Vector3D aim_desired(R_setpoint * setpoint_frame_axis_);
+  ctrl::Vector3D a_current = R_fk * tool_frame_axis_;
+  ctrl::Vector3D a_desired = R_setpoint * setpoint_frame_axis_;
 
-  ctrl::Vector3D rot_axis = axisBetween(aim_current, aim_desired);
-  double rot_angle = angleBetween(aim_current, aim_desired);
-
-  ctrl::Vector2D orient_error(rot_axis.x(), rot_axis.y());
-  orient_error *= rot_angle;
+  a_current.normalize();
+  a_desired.normalize();
 
   ctrl::Vector3D pos_error((setpoint->pose.p - pose_kdl.p).data);
+  ctrl::Vector3D axis_error = a_current.cross(a_desired);
 
-  ctrl::Vector5D cart_cmd;
-  cart_cmd << pose_params_.k_position * pos_error + setpoint->twist.head<3>(),
-      pose_params_.k_orient * orient_error;
-
-  // --- Redundancy resolution ---
-  ctrl::VectorND h = rr_objective_->getJointControlCmd(joint_state_);
+  // --- Command generation ---
+  ctrl::Vector3D axis_cmd = pose_params_.k_orient * axis_error;
+  ctrl::Vector6D task_cmd;
+  task_cmd << pose_params_.k_position * pos_error + setpoint->twist.head<3>(),
+      axis_cmd;
 
   // --- Control law ---
-  ctrl::MatrixND J = jac.data.block(0, 0, 5, n_joints_);
-  ctrl::MatrixND J_pinv = ctrl::rightPinv(J);
+  ctrl::MatrixND J_task(6, n_joints_);
+  J_task.topRows(3) = jac.data.block(0, 0, 3, n_joints_);
+  J_task.bottomRows(3) =
+      -ctrl::skew(a_current) * jac.data.block(3, 0, 3, n_joints_);
 
+  ctrl::MatrixND J_pinv = ctrl::pseudoInverse(J_task);
   static ctrl::MatrixND I = ctrl::MatrixND::Identity(n_joints_, n_joints_);
-  ctrl::VectorND joint_velocity =
-      J_pinv * cart_cmd + (I - J_pinv * J) * h;
+  ctrl::VectorND h = rr_objective_->getJointControlCmd(joint_state_);
+
+  ctrl::VectorND joint_velocity = J_pinv * task_cmd + (I - J_pinv * J_task) * h;
 
   const auto& joint_command = update_joint_command(joint_velocity, period);
   write_joint_command(joint_command);

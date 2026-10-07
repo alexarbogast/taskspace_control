@@ -64,6 +64,14 @@ MatrixND leftPinv(const MatrixND& matrix);
 MatrixND rightPinv(const MatrixND& matrix);
 
 /**
+ * @brief Find the Moore-Penrose pseudoinverse of a matrix
+ *
+ * @param matrix the matrix on which to perform the pseudoinverse
+ * @returns the Moore-Penrose pseudoinverse of "matrix"
+ */
+MatrixND pseudoInverse(const MatrixND& matrix);
+
+/**
  * @brief Find the damped pseudoinverse of a matrix
  *
  * @param matrix the matrix on which to perform the pseudoinverse
@@ -71,6 +79,14 @@ MatrixND rightPinv(const MatrixND& matrix);
  * @returns the damped pseudoinverse of "matrix"
  */
 MatrixND dampedPinv(const MatrixND& matrix, double alpha);
+
+/**
+ * @brief Construct a skew-symmetric matrix from a 3-vector
+ *
+ * @param v the vector form which to create the skew-symmetric matrix
+ * @returns the skew-symmetric matrix
+ */
+ctrl::Matrix3D skew(const ctrl::Vector3D& v);
 
 /**
  * @brief Compute the manipulability measure from a Jacobian
