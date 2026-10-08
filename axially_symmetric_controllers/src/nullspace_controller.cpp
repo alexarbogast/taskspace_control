@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "axially_symmetric_controllers/nullspace_controller.hpp"
-#include "axially_symmetric_controllers/utility.hpp"
 
 namespace axially_symmetric_controllers
 {
