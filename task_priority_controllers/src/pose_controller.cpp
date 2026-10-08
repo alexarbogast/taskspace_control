@@ -106,7 +106,7 @@ PoseController::update(const rclcpp::Time& time, const rclcpp::Duration& period)
 
   // --- Control law ---
   static ctrl::MatrixND I = ctrl::MatrixND::Identity(n_joints_, n_joints_);
-  ctrl::MatrixND J_pinv = ctrl::rightPinv(jac.data);
+  ctrl::MatrixND J_pinv = ctrl::pseudoInverse(jac.data);
   ctrl::VectorND joint_velocity =
       J_pinv * cart_cmd + (I - J_pinv * jac.data) * h;
 

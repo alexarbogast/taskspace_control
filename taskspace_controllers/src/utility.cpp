@@ -17,16 +17,6 @@
 namespace ctrl
 {
 
-MatrixND leftPinv(const MatrixND& matrix)
-{
-  return (matrix.transpose() * matrix).inverse() * matrix.transpose();
-}
-
-MatrixND rightPinv(const MatrixND& matrix)
-{
-  return matrix.transpose() * (matrix * matrix.transpose()).inverse();
-}
-
 MatrixND pseudoInverse(const MatrixND& matrix)
 {
   Eigen::CompleteOrthogonalDecomposition<MatrixND> cod(matrix);

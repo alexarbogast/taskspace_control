@@ -139,7 +139,7 @@ PoseController::update(const rclcpp::Time& time, const rclcpp::Duration& period)
   cart_cmd += setpoint->twist;
 
   // --- Control law ---
-  ctrl::VectorND joint_velocity = ctrl::rightPinv(jac.data) * cart_cmd;
+  ctrl::VectorND joint_velocity = ctrl::pseudoInverse(jac.data) * cart_cmd;
 
   const auto& joint_command = update_joint_command(joint_velocity, period);
   write_joint_command(joint_command);

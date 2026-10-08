@@ -29,7 +29,6 @@ generate_parameter_library(
 ######################################################
 # Build executables and libraries
 add_library(${PROJECT_NAME} SHARED
-  src/utility.cpp
   src/axially_symmetric_controller_base.cpp
   src/nullspace_controller.cpp
   src/twist_decomposition_controller.cpp

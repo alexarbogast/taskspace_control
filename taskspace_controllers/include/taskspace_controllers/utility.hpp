@@ -42,28 +42,6 @@ typedef Eigen::AngleAxisd AngleAxis;
 typedef Eigen::Isometry3d Pose;
 
 /**
- * @brief Find the left pseudoinverse of a matrix
- *
- * Returns the left Moore-Penrose pseudoinverse of a "tall" (more rows than
- * columns) matrix with linearly independent columns.
- *
- * @param matrix the matrix on which to perform the pseudoinverse
- * @returns the left pseudoinverse of "matrix"
- */
-MatrixND leftPinv(const MatrixND& matrix);
-
-/**
- * @brief Find the right pseudoinverse of a matrix
- *
- * Returns the right Moore-Penrose pseudoinverse of a "wide" (more columns than
- * rows) matrix with linearly independent rows.
- *
- * @param matrix the matrix on which to perform the pseudoinverse
- * @returns the right pseudoinverse of "matrix"
- */
-MatrixND rightPinv(const MatrixND& matrix);
-
-/**
  * @brief Find the Moore-Penrose pseudoinverse of a matrix
  *
  * @param matrix the matrix on which to perform the pseudoinverse
