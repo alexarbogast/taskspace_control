@@ -57,13 +57,12 @@ controller_interface::return_type NullspaceController::update(
   a_desired.normalize();
 
   ctrl::Vector3D pos_error((setpoint->pose.p - pose_kdl.p).data);
-  ctrl::Vector3D axis_error = a_current.cross(a_desired);
+  ctrl::Vector3D axis_error = a_current.cross(a_desired).cross(a_current);
 
   // --- Command generation ---
-  ctrl::Vector3D axis_cmd = pose_params_.k_orient * axis_error;
   ctrl::Vector6D task_cmd;
   task_cmd << pose_params_.k_position * pos_error + setpoint->twist.head<3>(),
-      axis_cmd;
+      pose_params_.k_orient * axis_error;
 
   // --- Control law ---
   ctrl::MatrixND J_task(6, n_joints_);
