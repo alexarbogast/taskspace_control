@@ -56,7 +56,7 @@ MatrixND pseudoInverse(const MatrixND& matrix);
  * @param alpha the damping factor between 0 and 1
  * @returns the damped pseudoinverse of "matrix"
  */
-MatrixND dampedPinv(const MatrixND& matrix, double alpha);
+MatrixND dampedPseudoInverse(const MatrixND& matrix, double alpha);
 
 /**
  * @brief Construct a skew-symmetric matrix from a 3-vector

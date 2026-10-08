@@ -59,10 +59,9 @@ controller_interface::return_type TwistDecompositionController::update(
   ctrl::Vector3D axis_error = a_current.cross(a_desired);
 
   // --- Command generation ---
-  ctrl::Vector3D axis_cmd = pose_params_.k_orient * axis_error;
   ctrl::Vector6D task_cmd;
   task_cmd << pose_params_.k_position * pos_error + setpoint->twist.head<3>(),
-      axis_cmd;
+      pose_params_.k_orient * axis_error;
 
   // --- Twist decomposition ---
   ctrl::Vector3D e(pose_kdl.M.UnitZ().data);

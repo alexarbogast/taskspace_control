@@ -23,11 +23,12 @@ MatrixND pseudoInverse(const MatrixND& matrix)
   return cod.pseudoInverse();
 }
 
-MatrixND dampedPinv(const MatrixND& matrix, double alpha)
+MatrixND dampedPseudoInverse(const MatrixND& matrix, double alpha)
 {
-  MatrixND identity = MatrixND::Identity(matrix.rows(), matrix.rows());
-  return matrix.transpose() *
-         (matrix * matrix.transpose() + alpha * alpha * identity).inverse();
+  const MatrixND identity = MatrixND::Identity(matrix.rows(), matrix.rows());
+  const MatrixND A = matrix * matrix.transpose() + alpha * alpha * identity;
+
+  return matrix.transpose() * A.ldlt().solve(identity);
 }
 
 ctrl::Matrix3D skew(const ctrl::Vector3D& v)
