@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.14.4)
 project(taskspace_control_msgs)
 
 find_package(ament_cmake REQUIRED)
