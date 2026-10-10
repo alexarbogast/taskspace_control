@@ -2,41 +2,43 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: bug
 assignees: ''
-
 ---
-
-<!--
-For Bug report or feature requests, please fill out the relevant category below
--->
 
 ## Bug report
 
-**Required Info:**
+#### Description
 
-- Operating System:
-  - <!-- OS and version (e.g. Windows 10, Ubuntu 16.04...) -->
-- Computer:
-  - <!-- Nvidia Jetson Orin, 13th Gen Intel NUC, Ryzen 9 7940-HS -->
-- ROS2 Version:
-  - <!-- ROS2 distribution and install method (e.g. Foxy binaries, Dashing source...) -->
-- Version or commit hash:
-  - <!-- from source: output of `git -C taskspace_control rev-parse HEAD -->
-- DDS implementation:
-  - <!-- rmw_implementation used (e.g. Fast-RTPS, RTI Connext, etc.) -->
+<!-- Briefly describe the issue and its impact. -->
 
-#### Steps to reproduce issue
-<!-- Detailed instructions on how to reliably reproduce this issue http://sscce.org/
-``` code that can be copy-pasted is preferred ``` -->
-```
+#### Steps to reproduce
 
-```
+<!-- Provide minimal, numbered steps to reproduce the issue.
+     Include commands or code snippets where possible. -->
+
+1.
+2.
+3.
 
 #### Expected behavior
 
+<!-- What did you expect to happen? -->
+
 #### Actual behavior
 
-#### Reproduction instructions
+<!-- What happened instead? Include relevant error messages or logs. -->
 
-#### Additional information
+#### Environment
+
+- **OS:** <!-- e.g., Ubuntu 22.04 -->
+- **ROS 2 distribution:** <!-- e.g., Humble, Jazzy -->
+- **Installation:** <!-- e.g., source, binary -->
+- **Version / commit:** <!-- e.g., output of `git rev-parse HEAD` -->
+- **Hardware:** <!-- e.g., x86_64 PC, NVIDIA Jetson Orin -->
+- **RMW implementation:** <!-- e.g., rmw_fastrtps_cpp -->
+
+#### Additional context
+
+<!-- Include relevant configuration, logs, screenshots, or other details.
+     If possible, provide a minimal, self-contained example. -->
