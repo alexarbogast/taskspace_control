@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 737
   - Class: rviz_common/Selection
@@ -69,7 +70,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link1:
           Alpha: 1
           Show Axes: false
@@ -96,6 +96,11 @@ Visualization Manager:
           Show Trail: false
           Value: true
         link6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link7:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -140,6 +145,8 @@ Visualization Manager:
           Value: false
         link6:
           Value: false
+        link7:
+          Value: false
         tool:
           Value: true
         tool0:
@@ -160,9 +167,10 @@ Visualization Manager:
                   link4:
                     link5:
                       link6:
-                        tool0:
-                          tool:
-                            {}
+                        link7:
+                          tool0:
+                            tool:
+                              {}
       Update Interval: 0
       Value: true
     - Class: rviz_default_plugins/MarkerArray

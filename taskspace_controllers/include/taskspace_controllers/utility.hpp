@@ -42,26 +42,12 @@ typedef Eigen::AngleAxisd AngleAxis;
 typedef Eigen::Isometry3d Pose;
 
 /**
- * @brief Find the left pseudoinverse of a matrix
- *
- * Returns the left Moore-Penrose pseudoinverse of a "tall" (more rows than
- * columns) matrix with linearly independent columns.
+ * @brief Find the Moore-Penrose pseudoinverse of a matrix
  *
  * @param matrix the matrix on which to perform the pseudoinverse
- * @returns the left pseudoinverse of "matrix"
+ * @returns the Moore-Penrose pseudoinverse of "matrix"
  */
-MatrixND leftPinv(const MatrixND& matrix);
-
-/**
- * @brief Find the right pseudoinverse of a matrix
- *
- * Returns the right Moore-Penrose pseudoinverse of a "wide" (more columns than
- * rows) matrix with linearly independent rows.
- *
- * @param matrix the matrix on which to perform the pseudoinverse
- * @returns the right pseudoinverse of "matrix"
- */
-MatrixND rightPinv(const MatrixND& matrix);
+MatrixND pseudoInverse(const MatrixND& matrix);
 
 /**
  * @brief Find the damped pseudoinverse of a matrix
@@ -70,7 +56,15 @@ MatrixND rightPinv(const MatrixND& matrix);
  * @param alpha the damping factor between 0 and 1
  * @returns the damped pseudoinverse of "matrix"
  */
-MatrixND dampedPinv(const MatrixND& matrix, double alpha);
+MatrixND dampedPseudoInverse(const MatrixND& matrix, double alpha);
+
+/**
+ * @brief Construct a skew-symmetric matrix from a 3-vector
+ *
+ * @param v the vector form which to create the skew-symmetric matrix
+ * @returns the skew-symmetric matrix
+ */
+ctrl::Matrix3D skew(const ctrl::Vector3D& v);
 
 /**
  * @brief Compute the manipulability measure from a Jacobian

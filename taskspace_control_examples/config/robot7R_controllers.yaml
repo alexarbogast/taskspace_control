@@ -60,14 +60,17 @@ as_nullspace_controller:
     base_link: base_link
     eef_link: tool
 
+    eef_frame_axis: [1.0, 0.0, 0.0]
+    setpoint_frame_axis: [1.0, 0.0, 0.0]
+
     k_position: 10.0
     k_orient: 10.0
 
     setpoint_topic: setpoint
 
-    rr_objective_type: match_configuration
-    match_config: [0.0, 0.0, 0.0, 1.570796, 0.0, 1.570796, 0.0]
-    k_config: 10.0
+    rr_objective_type: maximize_manipulability
+    rr_objective:
+      k_manip: 10.0
 
 as_twist_decomposition_controller:
   ros__parameters:

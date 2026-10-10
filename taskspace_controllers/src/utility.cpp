@@ -17,21 +17,29 @@
 namespace ctrl
 {
 
-MatrixND leftPinv(const MatrixND& matrix)
+MatrixND pseudoInverse(const MatrixND& matrix)
 {
-  return (matrix.transpose() * matrix).inverse() * matrix.transpose();
+  Eigen::CompleteOrthogonalDecomposition<MatrixND> cod(matrix);
+  return cod.pseudoInverse();
 }
 
-MatrixND rightPinv(const MatrixND& matrix)
+MatrixND dampedPseudoInverse(const MatrixND& matrix, double alpha)
 {
-  return matrix.transpose() * (matrix * matrix.transpose()).inverse();
+  const MatrixND identity = MatrixND::Identity(matrix.rows(), matrix.rows());
+  const MatrixND A = matrix * matrix.transpose() + alpha * alpha * identity;
+
+  return matrix.transpose() * A.ldlt().solve(identity);
 }
 
-MatrixND dampedPinv(const MatrixND& matrix, double alpha)
+ctrl::Matrix3D skew(const ctrl::Vector3D& v)
 {
-  MatrixND identity = MatrixND::Identity(matrix.rows(), matrix.rows());
-  return matrix.transpose() *
-         (matrix * matrix.transpose() + alpha * alpha * identity).inverse();
+  Matrix3D S;
+  // clang-format off
+  S << 0.0,  -v.z(), v.y(),
+       v.z(), 0.0,  -v.x(),
+      -v.y(), v.x(), 0.0;
+  // clang-format on
+  return S;
 }
 
 double compute_manipulability(const KDL::Jacobian& jac)

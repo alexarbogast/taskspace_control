@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.14.4)
 project(axially_symmetric_controllers)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -29,7 +29,6 @@ generate_parameter_library(
 ######################################################
 # Build executables and libraries
 add_library(${PROJECT_NAME} SHARED
-  src/utility.cpp
   src/axially_symmetric_controller_base.cpp
   src/nullspace_controller.cpp
   src/twist_decomposition_controller.cpp
